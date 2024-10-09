@@ -412,7 +412,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
                 # get direction of steepest gradient descent along a single dimension
                 for DW_HIC in 1:k_max_HIC
 
-                    print("OP number: ", (index - 1), ", HIC directed walk number: $DW_HIC __________________", "\n")
+                    print("OP number: ", (index - 1),"/", length(closest_ops), ", HIC directed walk number: $DW_HIC __________________", "\n")
 
                     # compute damping ratio with perturbed generator setpoints     
                     for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)

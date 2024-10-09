@@ -61,8 +61,8 @@ mvnd_sampling =             true
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
-hyperplanes =               25
-polytope_samples =          500
+hyperplanes =               5
+polytope_samples =          100
 mvnd_samples =              2000
 
 # specify stopping criteria for hyperplane generation
