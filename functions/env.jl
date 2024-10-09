@@ -1,0 +1,22 @@
+cd("C:/Users/bagir/Documents/1) Projects/2) Datasets/2) Datasets code")
+# install necessary packages
+using Pkg
+Pkg.activate(".")
+Pkg.status()
+# Pkg.update("LatinHypercubeSampling")
+# Pkg.update("PowerModelsAnnex")
+# Pkg.update("PowerModelsSecurityConstrained")
+# Pkg.add("MosekTools")
+# Pkg.build("StatsPlots")
+# Pkg.add("Suppressor")
+# ENV["R_HOME"] = "C:\\Program Files\\R\\R-4.3.2"
+# Pkg.build("RCall")
+# Pkg.add("Polyhedra")
+# Pkg.add("LinearAlgebra")
+# Pkg.add("CSV")
+# Pkg.add("DataFrames")
+# Pkg.add("Statistics")
+# Pkg.add("Distributions")
+# Pkg.build("Plots")
+# Pkg.add("Memento")
+# Pkg.add("InfrastructureModels")
