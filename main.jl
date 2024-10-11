@@ -8,8 +8,6 @@ Next necessary steps:
 Florian did DWs for every initialization point in parallel. He also says DWs result in OPs close to eachother, so for N-2 check he only considered
 initialization points which where at least a radius R apart from each other.
 
-R <= kmax * min{alpha} where alpha is step_size*Pmax
-
 - do directed walks only for the most critical contingency when considering contingencies
 
 - make sure all OPs in the dataset are unique. Get discretization interval 
@@ -76,7 +74,7 @@ end
 feasible_ops_polytope, pf_results_feas_polytope, op_info_feas_pol, infeasible_ops_polytope, pf_results_infeas_polytope, op_info_infeas_pol, nb_feasible, nb_infeasible, pvpq_feasible, initial_feasible, correct_feasible, sampling_time = result_init
 
 # write macros 
-df_macros_init(volumes, elapsed_time_init, hyperplane_time, sampling_time, memory_init, initial_feasible, pvpq_feasible, correct_feasible, Initialize.directory, Initialize.init_macros_filename)
+df_macros_init(volumes, elapsed_time_init, hyperplane_time, sampling_time, memory_init, initial_feasible, pvpq_feasible, correct_feasible, Initialize.directory, Initialize.pol_macros_filename)
 
 clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
@@ -107,8 +105,9 @@ clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 # Perform directed walks on the samples which are closest to the stability boundary
 if Initialize.directed_walks == true
     distance = [0.015, 0.01, 0.005] # distance determining step size, (9 bus [0.02, 0.01, 0.005])(39 bus [0.015, 0.01, 0.005])
-    alpha = [2, 1, 0.5, 0.25] # step size, (9 bus [2, 1, 0.5, 0.1]) (39 bus ops 1 [2, 1, 0.5, 0.1)  ops2( [0.5, 0.25, 0.1, 0.025] )
+    alpha = [2, 1.5, 1, 0.5] # step size, (9 bus [2, 1, 0.5, 0.1]) (39 bus ops 1 [2, 1, 0.5, 0.25)  ops2( [0.5, 0.25, 0.1, 0.025] )
 
+    # obtain smalles Pmax to determin minimal distance between OPs R
     min_pmax = 1000
     for i in 1:length(data_tight_tmp["gen"])
         global min_pmax
@@ -118,19 +117,26 @@ if Initialize.directed_walks == true
         end
     end
 
-    R_min = minimum(alpha)*min_pmax
+    # determine minimal distance between OPs. Also take into account that normal step size includes gradient!
+    R_min = minimum(alpha)*min_pmax #*Initialize.k_max
 
     # # only do directed walks with static secure OPs and closest to stability boundary
     # closest_ops = closest_to_boundary_indices(damp_pol_feas, Initialize.eigenvalues_dws, stability_lower_bound, stability_upper_bound)
     # cls_op = feasible_ops_polytope[closest_ops]
 
-    cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, R_min)
+    # get feasible and stable ops with spacing R from each other
+    cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)
+    num_dws = length(cls_op)
 
+    # Perform directed walks
+    start_time_dws = time()
     directed_walk_ops, directed_walk_stability = DW_step(data_tight_tmp, feasible_ops_polytope, closest_ops, cls_op, Initialize.variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+    end_time_dws = time()
+    elapsed_time_dws = end_time_dws - start_time_dws
 
     # check AC feasibility of operating points after DWs
     feasible_ops_dws, pf_results_feas_dws, op_info_feas_dws, infeasible_ops_dws, pf_results_infeas_dws, op_info_infeas_dws, nb_feasible_dws, nb_infeasible_dws, initial_feasible_dws, damp_dws_feas, damp_dws_infeas, dist_dws_feas, dist_dws_infeas = dw_ops_feasibility(Initialize.network_data, data_tight_tmp, Initialize.variable_loads, directed_walk_ops, directed_walk_stability)
-
+    
 end
 
 
@@ -163,6 +169,9 @@ if Initialize.mvnd_sampling == true
         boundary_ops = feasible_ops_polytope
 
     end
+
+    # determine number of boundary ops for constructing MVND
+    num_boundary_ops = length(boundary_ops)
 
     # start sampling from the multivariate normal distribution, constructed from AC feasible OPs in the stability boundary
     result_mvnd, elapsed_time_mvnd, memory_mvnd, garbage_mvnd = @timed begin
@@ -203,13 +212,7 @@ end_time = time()
 # Calculate elapsed time
 elapsed_time = end_time - start_time
 println("Elapsed time: ", elapsed_time, " seconds")
-
-time_method_path = joinpath(Initialize.directory, "method_time.txt")
-file = open(time_method_path, "w")
-println(file, "Elapsed time method sampling: ", elapsed_time, " seconds")
-println(file, "Number of boundary ops for MVND: ", length(boundary_ops))
-close(file)
-
+df_macros_total(elapsed_time, num_boundary_ops, num_dws, elapsed_time_dws, Initialize.directory, Initialize.method_macros)
 
 # write dataframe to CSV
 df_DW = construct_df()

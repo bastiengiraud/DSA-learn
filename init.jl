@@ -10,10 +10,10 @@ include("functions/acpfcorrect.jl")
 include("functions/support.jl")
 include("functions/method.jl")
 
-export data_path, file_path, dir_dynamics, case_name, directory, dataset_filename, flows_filename, init_macros_filename, mvnd_macros_filename, network_data, 
+export data_path, file_path, dir_dynamics, case_name, directory, dataset_filename, flows_filename, pol_macros_filename, mvnd_macros_filename, method_macros, network_data, 
 mvnd_sampling, contingency_analysis, sss_analysis, directed_walks, variable_loads, hyperplanes, polytope_samples, mvnd_samples, stopping_iteration,
-stopping_percentage, contingencies_inf, contingencies_n1, eigenvalues_dws, k_max, k_max_HIC, nominal_load, lhc_dataset_filename, lhc_flows_filename, lhc_samples, opt_dataset_filename,
-opt_samples, imp_dataset_filename, imp_flows_filename, lhc_imp_samples, nb_imp_samples, stability_boundary, stability_margin
+stopping_percentage, contingencies_inf, contingencies_n1, eigenvalues_dws, k_max, k_max_HIC, nominal_load, lhc_dataset_filename, lhc_flows_filename, lhc_macros, lhc_samples, opt_dataset_filename,
+opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_boundary, stability_margin
 
 project_directory =         "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/"
 case_number =               "39"
@@ -32,12 +32,14 @@ case_name =                 "case$(case_number)" #
 directory =                 "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case$(case_number)/datasets/"
 dataset_filename =          "ops3.csv"
 flows_filename =            "flows3.csv"
-init_macros_filename =      "macros3.csv"
+pol_macros_filename =       "macros_polytope3.csv"
 mvnd_macros_filename =      "macros_mvnd3.csv"
+method_macros =             "macros_method3.csv"
 
 # LHC sampling initialization
 lhc_dataset_filename =      "lhc_ops.csv"
 lhc_flows_filename =        "lhc_flows.csv"
+lhc_macros =                "macros_lhc.csv"
 lhc_samples =               10000
 
 # optimization based sampling
@@ -47,6 +49,7 @@ opt_samples =               500
 # importance sampling
 imp_dataset_filename =      "imp_ops2.csv"
 imp_flows_filename =        "imp_flows2.csv"
+imp_macros =                "macros_imp.csv"
 lhc_imp_samples =           2500
 nb_imp_samples =            10000
 
@@ -61,9 +64,9 @@ mvnd_sampling =             true
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
-hyperplanes =               5
+hyperplanes =               10
 polytope_samples =          100
-mvnd_samples =              2000
+mvnd_samples =              10000
 
 # specify stopping criteria for hyperplane generation
 stopping_iteration =        20

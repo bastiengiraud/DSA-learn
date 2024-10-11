@@ -374,6 +374,9 @@ upper_bound = Initialize.stability_boundary + Initialize.stability_margin
 boundary_ops_ind = ops_in_stability_boundary(damp_pol_feas, lower_bound, upper_bound)
 boundary_ops = feasible_ops[boundary_ops_ind]
 
+# get number of boundary OPs MVND is constructed over
+num_boundary_ops = length(boundary_ops)
+
 # distance to stability boundary of current sampled operating point
 function boundary_distance(current_op, boundary_op)
     return norm((current_op - boundary_op), 2)
@@ -692,12 +695,8 @@ end_time = time()
 # Calculate elapsed time
 elapsed_time = end_time - start_time
 println("Elapsed time: ", elapsed_time, " seconds")
+df_macros_total(elapsed_time, num_boundary_ops, 0, 0, Initialize.directory, Initialize.imp_macros)
 
-time_imp_path = joinpath(Initialize.directory, "imp_time.txt")
-file = open(time_imp_path, "w")
-println(file, "Elapsed time importance sampling: ", elapsed_time, " seconds")
-println(file, "Number of boundary ops for MVND: ", length(boundary_ops))
-close(file)
 
 # write dataframe to CSV
 df_DW = construct_df()

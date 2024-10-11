@@ -2,6 +2,21 @@
 using DataFrames
 using CSV
 
+
+function df_macros_total(elapsed_time, num_boundary_ops, num_dws, time_dws, directory, filename)
+    #---------- dataframe with macros ----------------
+    # make dataframe for run specifications
+    df_init = DataFrame(Total_time = elapsed_time)
+    df_init.num_mvnd_boundary_ops = num_boundary_ops
+    df_init.number_of_dws = num_dws
+    df_init.time_of_dws = time_dws
+
+    output_path_macros = joinpath(directory, filename)
+    CSV.write(output_path_macros, df_init; delim=';')  
+
+end
+
+
 function df_macros_init(volumes, elapsed, hp_time, sample_time, memory, init_feasible, pvpq_feasible, correct_feasible, directory, filename)
     #---------- dataframe with macros ----------------
     # make dataframe for run specifications

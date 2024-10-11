@@ -237,25 +237,28 @@ function euclidean_distance(x::Vector, y::Vector)
 end
 
 # Function to remove arrays that lie within a given radius R from each other
-function remove_nearby_arrays(arrays::Vector{Any}, R::Float64)
-    # Create a boolean mask to track which arrays should be kept
-    keep = ones(Bool, length(arrays))
+function remove_nearby_arrays(arrays::Vector{Any}, damp_pol_feas::Vector{Any}, R::Float64)
+    # Step 1: Create a mask where damp_pol_feas >= 0 (i.e., valid points)
+    valid_mask = damp_pol_feas .>= 0
+    
+    # Step 2: Create a boolean mask to track which arrays should be kept, initialized to valid_mask
+    keep = valid_mask
 
-    # Iterate through each pair of arrays
+    # Step 3: Iterate through each pair of arrays where damp_pol_feas >= 0
     for i in 1:length(arrays)
         if keep[i]
             for j in (i+1):length(arrays)
-                if euclidean_distance(arrays[i], arrays[j]) < R
+                if keep[j] && euclidean_distance(arrays[i], arrays[j]) < R
                     keep[j] = false  # Mark the j-th array to be removed
                 end
             end
         end
     end
 
-    # Find the indices where the mask is true (arrays to keep)
+    # Step 4: Find the indices where the mask is true (arrays to keep)
     indices = findall(keep)
 
-    # Filter and return the arrays that are kept
+    # Step 5: Filter and return the arrays that are kept, along with their original indices
     return arrays[indices], indices
 end
 
@@ -389,7 +392,6 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
                 push!(directed_walk_stability, (stability["damping"], stability["distance"]))
             else
                 print("This OP already exists, not adding it to the dataset.", "\n")
-                break # stop if found existing point
             end
             
             # push!(directed_walk_ops, OP_tmp)
@@ -405,8 +407,83 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
 
             if (stability_boundary - stability_margin < current_damping) && 
                 (current_damping < stability_boundary + stability_margin)
-                # sample points around this point
-                #.......
+
+                ########### sample points around first HIC point
+                print("OP number: ", (index - 1),"/", length(closest_ops), ", Sampling around first HIC point __________________", "\n")
+                data_surround = deepcopy(data_build)
+                global surrounding_ops = []
+
+                # take a 1MW step in both directions for every generator
+                for (g, gen) in data_surround["gen"]
+                    if data_surround["bus"]["$(gen["gen_bus"])"]["bus_type"] !=3 && data_surround["gen"]["$g"]["pmax"] > 0.0
+                        sP = get_SetPoint(data_surround) # get the generator setpoints
+                        data_surround["gen"]["$g"]["pg"] += 0.01 # 1MW step
+                        new_SP = get_SetPoint(data_surround) # get new generator setpoints
+
+                        if data_surround["gen"]["$g"]["pmax"] < data_surround["gen"]["$g"]["pg"] # check if gen limits are not violated
+                            data_surround["gen"]["$g"]["pg"] = data_surround["gen"]["$g"]["pmax"]
+                        end
+
+                        # check small signal stability of perturbered generator and obtain stability indices
+                        sys_studied = create_system(data_surround)
+                        construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                        stability = small_signal_module(sys_studied)
+
+                        println(file, "Surrounding HIC setpoint up step __________________", "\n")
+                        println(file, "damping of surround setpoint: ", stability["damping"])
+                        println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+                        println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+                        
+                        # get setpoint
+                        OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
+            
+                        # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
+                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                            push!(directed_walk_ops, OP_tmp)
+                            push!(surrounding_ops, OP_tmp)
+                            push!(directed_walk_stability, (stability["damping"], stability["distance"]))
+                            print("New HIC OP found, adding it to the dataset.", "\n")
+                        else
+                            print("This OP already exists, not adding it to the dataset.", "\n")
+                        end
+
+                        sP = get_SetPoint(data_surround) # get the generator setpoints
+                        data_surround["gen"]["$g"]["pg"] -= 0.02 # 1MW step to original point, and 1MW step backwards
+                        new_SP = get_SetPoint(data_surround) # get new generator setpoints
+
+                        if data_surround["gen"]["$g"]["pmin"] > data_surround["gen"]["$g"]["pg"] # check if gen limits are not violated
+                            data_surround["gen"]["$g"]["pg"] = data_surround["gen"]["$g"]["pmin"]
+                        end
+
+                        # check small signal stability of perturbered generator and obtain stability indices
+                        sys_studied = create_system(data_surround)
+                        construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                        stability = small_signal_module(sys_studied)
+
+                        println(file, "Surrounding HIC setpoint down step__________________", "\n")
+                        println(file, "damping of surround setpoint: ", stability["damping"])
+                        println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+                        println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+                
+                        # get setpoint
+                        OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
+            
+                        # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
+                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                            push!(directed_walk_ops, OP_tmp)
+                            push!(surrounding_ops, OP_tmp)
+                            push!(directed_walk_stability, (stability["damping"], stability["distance"]))
+                            print("New HIC OP found, adding it to the dataset.", "\n")
+                        else
+                            print("This OP already exists, not adding it to the dataset.", "\n")
+                        end
+
+                        # reset to initial value for to evaluate next gen
+                        data_surround["gen"]["$g"]["pg"] += 0.01 # 1MW step
+
+                    end
+                end
+
 
                 ############ continue directed walks along a single dimension
                 # get direction of steepest gradient descent along a single dimension
@@ -458,7 +535,9 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
                     OP_tmp = get_Full_OP(data_build, data_build, data_build)
 
                     # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-                    if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                    # do add if it's part of directed_walk_ops but also surrounding_ops
+                    if !array_exists(feasible_ops_polytope, OP_tmp) && 
+                        (!array_exists(directed_walk_ops, OP_tmp) || array_exists(surrounding_ops, OP_tmp))
                         push!(directed_walk_ops, OP_tmp)
                         push!(directed_walk_stability, (stability["damping"], stability["distance"]))
                     else

@@ -334,12 +334,7 @@ end_time = time()
 # Calculate elapsed time
 elapsed_time = end_time - start_time
 println("Elapsed time: ", elapsed_time, " seconds")
-
-time_lhc_path = joinpath(Initialize.directory, "lhc_time.txt")
-file = open(time_lhc_path, "w")
-println(file, "Elapsed time lhc sampling: ", elapsed_time, " seconds")
-close(file)
-
+df_macros_total(elapsed_time, 0, 0, 0, Initialize.directory, Initialize.lhc_macros)
 
 # write dataframe to CSV
 df_DW = construct_df()
