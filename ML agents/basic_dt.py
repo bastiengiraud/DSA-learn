@@ -23,6 +23,12 @@ We could also try to see if we can prove if the HIC region indeed is important. 
 missclassification occurs. Is this close to the HIC region, or far from the HIC region?
 We could maybe make a dataset that consists only of points in this HIC region.
 
+A lot of false positives for the method are at samples with -1 damping. This is because a lot of 
+data from LHC and importance is centered at this point, and the training data of method contains
+no samples with -1 damping. For the rest, the method contains almost only samples around HIC region
+and classifies a lot of points along the whole spectrum correctly. The unbalance around -1 damping 
+messes it up. Also, maybe HIC region should be made larger.
+
 
 """
 
@@ -61,13 +67,13 @@ def fpr_score(y_actual, y_hat):
 
     return FPR, FP_list, FN_list
 
-def plot_damping_histograms(damping_data, training_data, FP_data, FN_data, title):
+def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, FP_data, FN_data, title):
     """
     Function to plot the damping of the missclassified points.
     
     """
     # Define bin edges with steps of 0.0025, starting from 0
-    bins = np.arange(0, max(damping_data.max(), FP_data.max(), FN_data.max()) + 0.0025, 0.0025)
+    bins = np.arange(x_lb, max(damping_data.max(), FP_data.max(), FN_data.max()) + bar_width, bar_width)
 
     # Create a figure with three subplots, arranged horizontally (1 row, 3 columns)
     fig, axs = plt.subplots(1, 4, figsize=(20, 5))
@@ -105,7 +111,8 @@ def plot_damping_histograms(damping_data, training_data, FP_data, FN_data, title
 
     # Set the same y-limits for all plots
     for ax in axs:
-        ax.set_ylim(1e-1, max_y)  # You can adjust the lower limit (1e-1) as needed
+        #ax.set_ylim(1e-1, max_y)  # You can adjust the lower limit (1e-1) as needed
+        ax.set_ylim(1e-1, 15000)
 
     # Add a title to the entire figure
     fig.suptitle(title, fontsize=16)
@@ -117,6 +124,9 @@ def plot_damping_histograms(damping_data, training_data, FP_data, FN_data, title
     # Show the plot
     plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust spacing, leaving room for the title
     plt.show()
+
+# specify test set: 'all', 'HIC', 'noHIC'
+test_index = "all"
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
@@ -143,8 +153,33 @@ file_path_result = os.path.join(directory, file_name_result)
 
 # Load the OP dataset
 op_data_method = pd.read_csv(file_path_method, sep = ';')
+op_index_method = np.ones(len(op_data_method), dtype=bool)
+op_index_method_HIC = (op_data_method['damping'] >= 0.0275) & (op_data_method['damping'] <= 0.0325)
+op_index_method_not_HIC = (op_data_method['damping'] < 0.0275) | (op_data_method['damping'] > 0.0325)
+
 op_data_lhc = pd.read_csv(file_path_lhc, sep = ';')
+op_index_lhc = np.ones(len(op_data_lhc), dtype=bool)
+op_index_lhc_HIC = (op_data_lhc['damping'] >= 0.0275) & (op_data_lhc['damping'] <= 0.0325)
+op_index_lhc_not_HIC = (op_data_lhc['damping'] < 0.0275) | (op_data_lhc['damping'] > 0.0325)
+
 op_data_imp = pd.read_csv(file_path_imp, sep = ';')
+op_index_imp = np.ones(len(op_data_imp), dtype=bool)
+op_index_imp_HIC = (op_data_imp['damping'] >= 0.0275) & (op_data_imp['damping'] <= 0.0325)
+op_index_imp_not_HIC = (op_data_imp['damping'] < 0.0275) | (op_data_imp['damping'] > 0.0325)
+
+if test_index == 'all':
+    op_index_method = op_index_method
+    op_index_lhc = op_index_lhc
+    op_index_imp = op_index_imp
+elif test_index == 'HIC': 
+    op_index_method = op_index_method_HIC
+    op_index_lhc = op_index_lhc_HIC
+    op_index_imp = op_index_imp_HIC
+elif test_index == 'noHIC':
+    op_index_method = op_index_method_not_HIC
+    op_index_lhc = op_index_lhc_not_HIC
+    op_index_imp = op_index_imp_not_HIC
+
 
 # Load the flow dataset
 data_method = pd.read_csv(flow_path_method, sep = ';')
@@ -152,21 +187,27 @@ X_method = data_method.drop(columns = ['feasible', 'stable'], axis=1) # drop col
 y_method_stable = data_method['stable'] 
 y_method_feasible = data_method['feasible']
 y_method = y_method_stable*y_method_feasible
-X_train_method, X_test_method, y_train_method, y_test_method = train_test_split(X_method, y_method, test_size=0.25, random_state=42)
+X_train_method, X_test_method, y_train_method, y_test_method, method_index_train, method_index_test = train_test_split(X_method, y_method, op_index_method, test_size=0.25, random_state=42)
+X_test_method = X_test_method[method_index_test]
+y_test_method = y_test_method[method_index_test]
 
 data_lhc = pd.read_csv(flow_path_lhc, sep = ';')
 X_lhc = data_lhc.drop(columns = ['feasible', 'stable'], axis=1) # drop columns you won't use like ['Feas', 'N1 ....]
 y_lhc_stable = data_lhc['stable'] 
 y_lhc_feasible = data_lhc['feasible'] 
 y_lhc = y_lhc_stable*y_lhc_feasible
-X_train_lhc, X_test_lhc, y_train_lhc, y_test_lhc = train_test_split(X_lhc, y_lhc, test_size=0.25, random_state=42)
+X_train_lhc, X_test_lhc, y_train_lhc, y_test_lhc, lhc_index_train, lhc_index_test = train_test_split(X_lhc, y_lhc, op_index_lhc, test_size=0.25, random_state=42)
+X_test_lhc = X_test_lhc[lhc_index_test]
+y_test_lhc = y_test_lhc[lhc_index_test]
 
 data_imp = pd.read_csv(flow_path_imp, sep = ';')
 X_imp = data_imp.drop(columns = ['feasible', 'stable'], axis=1) # drop columns you won't use like ['Feas', 'N1 ....]
 y_imp_stable = data_imp['stable'] 
 y_imp_feasible = data_imp['feasible'] 
 y_imp = y_imp_stable*y_imp_feasible
-X_train_imp, X_test_imp, y_train_imp, y_test_imp = train_test_split(X_imp, y_imp, test_size=0.25, random_state=42)
+X_train_imp, X_test_imp, y_train_imp, y_test_imp, imp_index_train, imp_index_test = train_test_split(X_imp, y_imp, op_index_imp, test_size=0.25, random_state=42)
+X_test_imp = X_test_imp[imp_index_test]
+y_test_imp = y_test_imp[imp_index_test]
 
 # Initialize the DecisionTreeClassifier with gini impurity and max depth of 5. clf = classifier
 clf_method = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42) # splitter='best' or 'random' , ccp_alpha=0.01 for tree pruning
@@ -416,9 +457,11 @@ FN_damping_lhc = pd.concat([damping_data_lhc[FN_list_lhc], damping_data_method[F
 FN_damping_imp = pd.concat([damping_data_imp[FN_list_imp], damping_data_method[FN_list_imp_method], damping_data_lhc[FN_list_imp_lhc]])
 
 # plot the damping of the missclassified OPs
-plot_damping_histograms(damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping of missclassified OPs")
-plot_damping_histograms(damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping of missclassified OPs")
-plot_damping_histograms(damping_all_test_data, damping_train_data_imp, FP_damping_imp, FN_damping_imp, "Importance samples - damping of missclassified OPs")
+x_lb = -1
+bar_width = 0.01
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping of missclassified OPs")
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping of missclassified OPs")
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_imp, FP_damping_imp, FN_damping_imp, "Importance samples - damping of missclassified OPs")
 
 
 

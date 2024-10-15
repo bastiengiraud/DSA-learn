@@ -4,16 +4,15 @@ Next necessary steps:
 
 - get code running on HPC computer. You need to do DWs in parallel ideally, for all initialization points. 
 
-- when doing directed walks, sample around point when entering HIC. Also, make sure not to add any duplicates. 
-Florian did DWs for every initialization point in parallel. He also says DWs result in OPs close to eachother, so for N-2 check he only considered
-initialization points which where at least a radius R apart from each other.
-
 - do directed walks only for the most critical contingency when considering contingencies
 
 - make sure all OPs in the dataset are unique. Get discretization interval 
 
 - add all data and test cases in such a way in github that you can refer to the other folders, and not 
 to your own local directory for files etc.
+
+- make sure all directionaries are only specified in init.jl. If you import .init somewhere, make sure to specify it
+in it to keep overview. Also, clean_temp_folder location could be in init. Also DW.txt file in init.
 
 - make module ToolBox work
 
