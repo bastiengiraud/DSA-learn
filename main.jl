@@ -2,14 +2,14 @@
 
 Next necessary steps:
 
-- get code running on HPC computer. You need to do DWs in parallel ideally, for all initialization points. 
+- Get DWs in parallel ideally, for all initialization points. 
 
 - do directed walks only for the most critical contingency when considering contingencies
 
 - make sure all OPs in the dataset are unique. Get discretization interval 
 
 - add all data and test cases in such a way in github that you can refer to the other folders, and not 
-to your own local directory for files etc.
+to your own local directory for files etc. check command '@__DIR__'
 
 - make sure all directionaries are only specified in init.jl. If you import .init somewhere, make sure to specify it
 in it to keep overview. Also, clean_temp_folder location could be in init. Also DW.txt file in init.
@@ -33,6 +33,7 @@ cd("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projec
 # activate path and show active packages
 using Pkg
 Pkg.activate(".")
+Pkg.instantiate() # needed to download packages on remote machine?
 Pkg.status()
 
 # include support scripts
@@ -160,17 +161,19 @@ if Initialize.mvnd_sampling == true
         boundary_ops_ind = ops_in_stability_boundary(damp_ops, stability_lower_bound, stability_upper_bound)
         boundary_ops = feasible[boundary_ops_ind]
 
-        if boundary_ops == []
-            throw(ErrorException("There are no AC feasible samples which are small-signal stable in your current dataset. Fiting a MVND is not possible."))
-        end
     else
 
         boundary_ops = feasible_ops_polytope
 
     end
 
-    # determine number of boundary ops for constructing MVND
-    num_boundary_ops = length(boundary_ops)
+    if boundary_ops == []
+        throw(ErrorException("There are no AC feasible samples which are small-signal stable in your current dataset. Fiting a MVND is not possible."))
+    else
+    	# determine number of boundary ops for constructing MVND
+    	num_boundary_ops = length(boundary_ops)
+    	println("number of boundary ops: ", num_boundary_ops)    
+    end
 
     # start sampling from the multivariate normal distribution, constructed from AC feasible OPs in the stability boundary
     result_mvnd, elapsed_time_mvnd, memory_mvnd, garbage_mvnd = @timed begin

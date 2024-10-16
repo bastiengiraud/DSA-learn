@@ -84,7 +84,7 @@ def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, FP_dat
     axs[0].hist(training_data, bins=bins, alpha=0.7, color='purple')
     axs[0].set_title('Training Data')
     axs[0].set_xlabel('Damping Values')
-    axs[0].set_ylabel('Frequency (log scale)')
+    axs[0].set_ylabel('Amount of OPs (log scale)')
     axs[0].set_yscale('log')  # Set y-axis to logarithmic scale
     max_y = max(max_y, axs[0].get_ylim()[1]) 
 
@@ -126,7 +126,7 @@ def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, FP_dat
     plt.show()
 
 # specify test set: 'all', 'HIC', 'noHIC'
-test_index = "all"
+test_index = "HIC"
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
@@ -457,11 +457,11 @@ FN_damping_lhc = pd.concat([damping_data_lhc[FN_list_lhc], damping_data_method[F
 FN_damping_imp = pd.concat([damping_data_imp[FN_list_imp], damping_data_method[FN_list_imp_method], damping_data_lhc[FN_list_imp_lhc]])
 
 # plot the damping of the missclassified OPs
-x_lb = -1
-bar_width = 0.01
-plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping of missclassified OPs")
-plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping of missclassified OPs")
-plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_imp, FP_damping_imp, FN_damping_imp, "Importance samples - damping of missclassified OPs")
+x_lb = 0
+bar_width = 0.002
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping vs number of OPs")
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping vs number of OPs")
+plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_imp, FP_damping_imp, FN_damping_imp, "Importance samples - damping vs number of OPs")
 
 
 

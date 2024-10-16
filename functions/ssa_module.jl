@@ -87,12 +87,14 @@ end
 
 function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_numbers, dir_dynamics, case_name)
 
-    global total_damp = []
-    global total_dist = []
-    global total_eigen = []
+    total_damp = []
+    total_dist = []
+    total_eigen = []
+
+    data_build = deepcopy(data_tight_HP)
 
     for i in eachindex(global_OPs)   
-        data_build = deepcopy(data_tight_HP)
+        # data_build = deepcopy(data_tight_HP)
         for g in eachindex(pg_numbers)
             data_build["gen"]["$(pg_numbers[g])"]["pg"] = global_OPs[i][g] 
         end

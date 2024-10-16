@@ -112,8 +112,8 @@ function seperating_hyperplanes(network_data , hyperplanes, variable_loads, cont
     iter = 3
     volumes = []
 
-    global optimal_setpoints = []
-    global original_optimal = []
+    optimal_setpoints = []
+    original_optimal = []
 
     # OBBT on voltage magnitude and phase angle difference variables
     # QCLSPowerModel is a strengthened version of the "Quadratic convex" relaxation. An extreme-point encoding of trilinar terms is used along with a constraint to link the lambda variables in multiple trilinar terms
@@ -161,7 +161,7 @@ function seperating_hyperplanes(network_data , hyperplanes, variable_loads, cont
 
     # initialize vector of variables
     vars = []
-    global x_hat = []
+    x_hat = []
 
     # get generator variables and add to vars
     slack_gen_idx = get_slack_idx_mn(pm)
@@ -286,13 +286,13 @@ end
 function sample_polytope(network_data, data_tight_tmp, polytope_samples, variable_loads, contingencies_n1)
 
     nb_samples = polytope_samples
-    global in_samples = sample_pol(nb_samples) # draw samples from polytope P
-    global nb_feasible = 0
-    global nb_infeasible = 0
-    global pvpq_feasible = 0
-    global initial_feasible = 0
-    global correct_feasible = 0
-    tollerance = 1e-3
+    in_samples = sample_pol(nb_samples) # draw samples from polytope P
+    nb_feasible = 0
+    nb_infeasible = 0
+    pvpq_feasible = 0
+    initial_feasible = 0
+    correct_feasible = 0
+    tollerance = 1e-4
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight_tmp, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
@@ -305,10 +305,11 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
     load_results_infeas = []
     op_info_infeas = []
 
+    # avoid modifying original dataset
+    data_opf_verif = deepcopy(data_tight_tmp) 
+
     sampling_time = @elapsed begin
         for i in 1:nb_samples # loop over number of samples in polytope
-            #println("$i______________________")
-            data_opf_verif = deepcopy(data_tight_tmp) # copy tightened bounds network data, replace values with drawn samples
             
             # replace values in dictionary with samples drawn from polytope
             for g in eachindex(pg_numbers)
@@ -387,8 +388,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
 
             # check feasibility
             if op_flag["N0"] == 1 && op_flag["N1"] == 1
-                global nb_feasible += 1
-                global initial_feasible += 1
+                nb_feasible += 1
+                initial_feasible += 1
                 push!(pf_results_feas, PF_res0["solution"])
                 push!(load_results_feas, data_opf_verif)
                 push!(op_info_feas, op_flag) 
@@ -400,7 +401,7 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                 push!(pf_results_infeas, PF_res0["solution"])
                 push!(load_results_infeas, data_opf_verif)
                 push!(op_info_infeas, op_flag)
-                global nb_infeasible += 1
+                nb_infeasible += 1
 
                 # op placeholder
                 op_flag = Dict(
@@ -446,8 +447,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
 
                 if op_flag["N0"] == 1 && op_flag["N1"] == 1 
                     # if pvpq feasible add feasible point
-                    global nb_feasible += 1
-                    global pvpq_feasible += 1
+                    nb_feasible += 1
+                    pvpq_feasible += 1
                     push!(pf_results_feas, PF_res1["solution"])
                     push!(load_results_feas, data_opf_verif)
                     push!(op_info_feas, op_flag) 
@@ -532,8 +533,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     end
 
                     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-                        global nb_feasible += 1
-                        global correct_feasible += 1
+                        nb_feasible += 1
+                        correct_feasible += 1
                         push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
                         push!(load_results_feas, data_opf_verif)
                         push!(op_info_feas, op_flag)
@@ -607,16 +608,18 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
     load_results_infeas = []
     op_info_infeas = []
     
-    global nb_feasible_mvnd = 0
-    global nb_infeasible_mvnd = 0
-    global initial_feasible_mvnd = 0
-    global pvpq_feasible_mvnd = 0
-    global correct_feasible_mvnd = 0
-    tollerance = 1e-3
+    nb_feasible_mvnd = 0
+    nb_infeasible_mvnd = 0
+    initial_feasible_mvnd = 0
+    pvpq_feasible_mvnd = 0
+    correct_feasible_mvnd = 0
+    tollerance = 1e-4
+
+    # avoid modifying original dataset
+    data_opf_verif = deepcopy(data_tight_tmp)
 
     mvnd_sampling_time = @elapsed begin
         for i in eachindex(biased_samples[1,:])
-            data_opf_verif = deepcopy(data_tight_tmp)
             
             for g in eachindex(pg_numbers)
                 data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = biased_samples[g,i] #optimal_setpoints[i][g] #in_samples[g,i]
@@ -693,8 +696,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
 
             # check feasibility
             if op_flag["N0"] == 1 && op_flag["N1"] == 1
-                global nb_feasible_mvnd += 1
-                global initial_feasible_mvnd += 1
+                nb_feasible_mvnd += 1
+                initial_feasible_mvnd += 1
                 push!(pf_results_feas, PF_res0["solution"])
                 push!(load_results_feas, data_opf_verif)
                 push!(op_info_feas, op_flag) 
@@ -704,7 +707,7 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                 push!(pf_results_infeas, PF_res0["solution"])
                 push!(load_results_infeas, data_opf_verif)
                 push!(op_info_infeas, op_flag)
-                global nb_infeasible_mvnd += 1
+                nb_infeasible_mvnd += 1
 
                 # solve pvpq
                 PF_res1 = nothing
@@ -751,8 +754,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
 
                 if op_flag["N0"] == 1 && op_flag["N1"] == 1 
                     # if pvpq feasible add feasible point
-                    global nb_feasible_mvnd += 1
-                    global pvpq_feasible_mvnd += 1
+                    nb_feasible_mvnd += 1
+                    pvpq_feasible_mvnd += 1
                     push!(pf_results_feas, PF_res1["solution"])
                     push!(load_results_feas, data_opf_verif)
                     push!(op_info_feas, op_flag) 
@@ -834,8 +837,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                     end
 
                     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-                        global nb_feasible_mvnd += 1
-                        global correct_feasible_mvnd += 1
+                        nb_feasible_mvnd += 1
+                        correct_feasible_mvnd += 1
                         push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
                         push!(load_results_feas, data_opf_verif)
                         push!(op_info_feas, op_flag)

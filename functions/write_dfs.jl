@@ -3,17 +3,15 @@ using DataFrames
 using CSV
 
 
-function df_macros_total(elapsed_time, num_boundary_ops, num_dws, time_dws, directory, filename)
-    #---------- dataframe with macros ----------------
-    # make dataframe for run specifications
-    df_init = DataFrame(Total_time = elapsed_time)
-    df_init.num_mvnd_boundary_ops = num_boundary_ops
-    df_init.number_of_dws = num_dws
-    df_init.time_of_dws = time_dws
+function df_macros_total(elapsed_time::Float64, num_boundary_ops::Int64, num_dws::Int64, time_dws::Float64, directory::String, filename::String)
+    # Create a DataFrame with a single row of specifications
+    df_init = DataFrame(Total_time = [elapsed_time],              # Wrap elapsed_time in a vector
+                        num_mvnd_boundary_ops = [num_boundary_ops],  # Wrap num_boundary_ops in a vector
+                        number_of_dws = [num_dws],                  # Wrap num_dws in a vector
+                        time_of_dws = [time_dws])                    # Wrap time_dws in a vector
 
     output_path_macros = joinpath(directory, filename)
     CSV.write(output_path_macros, df_init; delim=';')  
-
 end
 
 

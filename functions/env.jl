@@ -29,6 +29,7 @@ Pkg.add("Distributions")
 Pkg.add("Memento")
 Pkg.add("InfrastructureModels")
 Pkg.add("Ipopt")
+Pkg.add("UUIDs")
 
 
 

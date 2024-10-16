@@ -2,6 +2,7 @@ using CSV
 using DataFrames
 using PowerModels
 using PowerSystems
+using UUIDs
 
 # Function to convert string to number or keep it as is
 function convert_value(value)
@@ -281,18 +282,37 @@ function initialize_steady_state_model(file_path)
 end
 
 
-function create_system(network)
-    export_matpower("file.m", network)
-    file_path = "file.m"
-    # The target line to detect and comment out
-    target_line = "mpc.multinetwork"
-    # Call the function to process the file
-    comment_line_in_file(file_path, target_line)
-    target_line = "mpc.multiinfrastructure"
-    # Call the function to process the file
-    comment_line_in_file(file_path, target_line)
+# function create_system(network)
+#     export_matpower("file.m", network)
+#     file_path = "file.m"
+#     # The target line to detect and comment out
+#     target_line = "mpc.multinetwork"
+#     # Call the function to process the file
+#     comment_line_in_file(file_path, target_line)
+#     target_line = "mpc.multiinfrastructure"
+#     # Call the function to process the file
+#     comment_line_in_file(file_path, target_line)
 
-    sys = System("file.m") # function from PowerSystems
+#     sys = System("file.m") # function from PowerSystems
+
+#     return sys
+# end
+
+function create_system(network)
+    file_id = UUIDs.uuid4()  # Generate a random UUID
+    file_path = "file_$file_id.m"  # Use the UUID in the filename
+
+    export_matpower(file_path, network)  # Export to the unique filename
+
+    # Comment out target lines
+    target_lines = ["mpc.multinetwork", "mpc.multiinfrastructure"]
+    for target_line in target_lines
+        comment_line_in_file(file_path, target_line)
+    end
+
+    sys = System(file_path)  # Use the unique file path
+
+    rm(file_path) # remove the file after usage
 
     return sys
 end
