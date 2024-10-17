@@ -5,28 +5,27 @@ An AC PF is solved, if the sample is infeasible, the full AC OPF is solved to fi
 
 """
 
-# specify current path
-cd("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code")
-
 # activate path and show active packages
 using Pkg
-Pkg.activate(".")
+root_dir = dirname(dirname(@__DIR__))
+Pkg.activate(root_dir)
+Pkg.instantiate() 
 Pkg.status()
 
 # include support scripts
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/method.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/contingency.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/ssa_module.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/dynamics.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/directed_walk.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/acpfcorrect.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/obbt_lu.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/polytope.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/support.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/write_dfs.jl")
+include(joinpath(root_dir, "functions/method.jl"))
+include(joinpath(root_dir, "functions/contingency.jl"))
+include(joinpath(root_dir, "functions/ssa_module.jl"))
+include(joinpath(root_dir, "functions/dynamics.jl"))
+include(joinpath(root_dir, "functions/directed_walk.jl"))
+include(joinpath(root_dir, "functions/acpfcorrect.jl"))
+include(joinpath(root_dir, "functions/obbt_lu.jl"))
+include(joinpath(root_dir, "functions/polytope.jl"))
+include(joinpath(root_dir, "functions/support.jl"))
+include(joinpath(root_dir, "functions/write_dfs.jl"))
 
 # import initialization module
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/init.jl")
+include(joinpath(root_dir, "init.jl"))
 using .Initialize
 
 check_initialization_lhc()
@@ -64,15 +63,16 @@ pf_results_infeas = []
 load_results_infeas = []
 op_info_infeas = []
 
-global nb_feasible = 0
-global nb_infeasible = 0 
-global pvpq_feasible = 0
-global initial_feasible = 0
-global correct_feasible = 0
+nb_feasible = 0
+nb_infeasible = 0 
+pvpq_feasible = 0
+initial_feasible = 0
+correct_feasible = 0
 tollerance = 1e-4
 
+data_opf_verif = deepcopy(Initialize.network_data)
+
 for i in 1:nb_samples    
-    data_opf_verif = deepcopy(Initialize.network_data)
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = sample_ops[i,g] 
@@ -164,8 +164,8 @@ for i in 1:nb_samples
 
     # check feasibility
     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-        global nb_feasible += 1
-        global initial_feasible += 1
+        nb_feasible += 1
+        initial_feasible += 1
         push!(pf_results_feas, PF_res0["solution"])
         push!(load_results_feas, data_opf_verif)
         push!(op_info_feas, op_flag) 
@@ -177,7 +177,7 @@ for i in 1:nb_samples
         push!(pf_results_infeas, PF_res0["solution"])
         push!(load_results_infeas, data_opf_verif)
         push!(op_info_infeas, op_flag)
-        global nb_infeasible += 1
+        nb_infeasible += 1
 
         # op placeholder
         op_flag = Dict(
@@ -254,8 +254,8 @@ for i in 1:nb_samples
 
         # check feasibility
         if op_flag["N0"] == 1 && op_flag["N1"] == 1
-            global nb_feasible += 1
-            global correct_feasible += 1
+            nb_feasible += 1
+            correct_feasible += 1
             push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_feas, data_opf_verif)
             push!(op_info_feas, op_flag) 
@@ -263,7 +263,7 @@ for i in 1:nb_samples
             println("ACPF correct feasibility:", acpfcorrect_feasibility , "\n")
         else 
             # add infeasible initial sample
-            global nb_infeasible += 1
+            nb_infeasible += 1
             push!(pf_results_infeas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_infeas, data_opf_verif)
             push!(op_info_infeas, op_flag)
@@ -300,8 +300,6 @@ infeasible_ops_polytope = infeasible_ops
 pf_results_infeas_polytope = pf_results_infeas
 op_info_infeas_pol = op_info_infeas
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
-
 
 # Perform small-signal stability analysis on all samples
 if Initialize.sss_analysis == true
@@ -316,8 +314,6 @@ if Initialize.sss_analysis == true
     end
 
     damp_pol_feas, dist_pol_feas, _ = result_sss_feas
-
-    clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
     # perform small signal stability analysis for infeasible samples
     result_sss_infeas, _, _, _ = @timed begin

@@ -3,7 +3,8 @@ include("method.jl")
 include("contingency.jl")
 
 # import initialization module
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/init.jl")
+init_dir = joinpath(@__DIR__, "init.jl")
+include(init_dir)
 using .Initialize
 
 k_max = Initialize.k_max
@@ -277,7 +278,8 @@ end
 
 function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
-    file = open("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/DW_file_try.txt", "w")
+    dw_dir = joinpath(@__DIR__, "DW_file_try.txt")
+    file = open(dw_dir, "w")
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
@@ -590,7 +592,8 @@ end
 
 function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
-    file = open("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/DW_file_try.txt", "w")
+    dw_dir = joinpath(@__DIR__, "DW_file_try.txt")
+    file = open(dw_dir, "w")
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))

@@ -1,9 +1,6 @@
-# specify current path
-cd("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code")
-
 # activate path and show active packages
 using Pkg
-Pkg.activate(".")
+Pkg.activate(@__DIR__)
 Pkg.status()
 
 using PowerModels

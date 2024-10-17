@@ -1,4 +1,4 @@
-ENV["R_HOME"] = "C:\\Program Files\\R\\R-4.3.2"
+# ENV["R_HOME"] = "C:\\Program Files\\R\\R-4.3.2"
 
 using RCall 
 

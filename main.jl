@@ -2,23 +2,24 @@
 
 Next necessary steps:
 
-- Get DWs in parallel ideally, for all initialization points. 
+- get baselines running on hpc, make directories work, remove global, avoid deepcopy, try for small number samples
+
+- Get DWs in parallel, for all initialization points?
 
 - do directed walks only for the most critical contingency when considering contingencies
 
 - make sure all OPs in the dataset are unique. Get discretization interval 
 
-- add all data and test cases in such a way in github that you can refer to the other folders, and not 
-to your own local directory for files etc. check command '@__DIR__'
-
 - make sure all directionaries are only specified in init.jl. If you import .init somewhere, make sure to specify it
 in it to keep overview. Also, clean_temp_folder location could be in init. Also DW.txt file in init.
 
-- make module ToolBox work
-
 - get another big case to work on (maybe 240 buses), besides 39 and 162
 
-- Future work: compare method against baselines for transient stability! Maybe also voltage collapse; point where you can't solve opf anymore
+
+Future work: 
+
+compare method against baselines for transient stability! 
+Maybe also voltage collapse; point where you can't solve opf anymore
 
 
 """
@@ -27,13 +28,10 @@ in it to keep overview. Also, clean_temp_folder location could be in init. Also 
 # This is the main file for the dataset creation toolbox.
 ##########################################################
 
-# specify current path
-cd("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code")
-
-# activate path and show active packages
+# activate current path and initialize environment
 using Pkg
-Pkg.activate(".")
-Pkg.instantiate() # needed to download packages on remote machine?
+Pkg.activate(@__DIR__)
+Pkg.instantiate() 
 Pkg.status()
 
 # include support scripts
@@ -76,8 +74,6 @@ feasible_ops_polytope, pf_results_feas_polytope, op_info_feas_pol, infeasible_op
 # write macros 
 df_macros_init(volumes, elapsed_time_init, hyperplane_time, sampling_time, memory_init, initial_feasible, pvpq_feasible, correct_feasible, Initialize.directory, Initialize.pol_macros_filename)
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
-
 # Perform small-signal stability analysis on all samples
 if Initialize.sss_analysis == true
 
@@ -100,8 +96,6 @@ if Initialize.sss_analysis == true
     damp_pol_infeas, dist_pol_infeas, _ = result_sss_infeas
 end
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
-
 # Perform directed walks on the samples which are closest to the stability boundary
 if Initialize.directed_walks == true
     distance = [0.015, 0.01, 0.005] # distance determining step size, (9 bus [0.02, 0.01, 0.005])(39 bus [0.015, 0.01, 0.005])
@@ -120,10 +114,6 @@ if Initialize.directed_walks == true
     # determine minimal distance between OPs. Also take into account that normal step size includes gradient!
     R_min = minimum(alpha)*min_pmax #*Initialize.k_max
 
-    # # only do directed walks with static secure OPs and closest to stability boundary
-    # closest_ops = closest_to_boundary_indices(damp_pol_feas, Initialize.eigenvalues_dws, stability_lower_bound, stability_upper_bound)
-    # cls_op = feasible_ops_polytope[closest_ops]
-
     # get feasible and stable ops with spacing R from each other
     cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)
     num_dws = length(cls_op)
@@ -139,8 +129,6 @@ if Initialize.directed_walks == true
     
 end
 
-
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 # Create a multivariate normal distribution and sample from this distribution
 if Initialize.mvnd_sampling == true
@@ -185,8 +173,6 @@ if Initialize.mvnd_sampling == true
     # write macros
     df_macros_mvnd(Initialize.mvnd_sampling, elapsed_time_mvnd, mvnd_sampling_time, memory_mvnd, initial_feasible_mvnd, pvpq_feasible_mvnd, correct_feasible_mvnd, Initialize.directory, Initialize.mvnd_macros_filename)
 
-    clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
-
     # Perform small-signal stability analysis on all samples
     if Initialize.sss_analysis == true
 
@@ -228,6 +214,3 @@ summary_result(Initialize.mvnd_sampling, Initialize.directed_walks)
 df_flow = construct_dt_data()
 output_path_dt_data = joinpath(Initialize.directory, Initialize.flows_filename)
 CSV.write(output_path_dt_data, df_flow; delim=';')  
-
-# clear temp folder
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")

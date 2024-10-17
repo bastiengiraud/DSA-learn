@@ -1,7 +1,6 @@
-cd("C:/Users/bagir/Documents/1) Projects/2) Datasets/2) Datasets code")
 # install necessary packages
 using Pkg
-Pkg.activate(".")
+Pkg.activate(@__DIR__)
 Pkg.status()
 Pkg.add(PackageSpec(name="PowerModels", version="0.21.2"))
 Pkg.add(PackageSpec(name="PowerModelsAnnex", version="0.11.0"))

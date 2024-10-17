@@ -455,37 +455,3 @@ end
 
 
 
-
-function plot_filtered_eigenvalues(total_eigen, min_index, max_index, real_limit::Float64)
-    # Filter eigenvalues based on real part limit
-    filtered_eigenvalues_min = filter(x -> real(x) >= real_limit, total_eigen[min_index])
-    filtered_eigenvalues_max = filter(x -> real(x) >= real_limit, total_eigen[max_index])
-    # Extract real and imaginary parts
-    scatter(filtered_eigenvalues_min)
-    scatter!(filtered_eigenvalues_max)
-    
-    # Function to calculate damping ratio lines
-    function damping_ratio_lines(damping_ratio)
-        real_parts = real_limit:0.1:0
-        imag_parts = real_parts .* sqrt(1 - damping_ratio^2) / damping_ratio
-        return real_parts, imag_parts
-    end
-    
-    # Calculate damping ratio lines for 3% and 5%
-    real_3, imag_3 = damping_ratio_lines(0.03)
-    real_5, imag_5 = damping_ratio_lines(0.05)
-    
-    # Plot damping ratio lines
-    plot!(real_3, imag_3, linestyle=:dash, label="3% Damping Ratio", color=:purple)
-    plot!(real_3, -imag_3, linestyle=:dash, color=:purple)
-    plot!(real_5, imag_5, linestyle=:dash, label="5% Damping Ratio", color=:orange)
-    plot!(real_5, -imag_5, linestyle=:dash, color=:orange)
-    
-    # Set plot properties
-    #xlabel!(L"\mathrm{Re}(\lambda)")  # LaTeX-formatted label for the real part of lambda
-    #ylabel!(L"\mathrm{Im}(\lambda)")  # LaTeX-formatted label for the imaginary part of lambda
-    title!("Filtered Eigenvalues and Damping Ratio Lines")
-    
-    # Save plot as PNG
-    savefig("/Users/lolacharles/Downloads/Thesis/Code/filtered_eigenvalues_plot.png")
-end

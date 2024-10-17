@@ -15,21 +15,17 @@ mvnd_sampling, contingency_analysis, sss_analysis, directed_walks, variable_load
 stopping_percentage, contingencies_inf, contingencies_n1, eigenvalues_dws, k_max, k_max_HIC, nominal_load, lhc_dataset_filename, lhc_flows_filename, lhc_macros, lhc_samples, opt_dataset_filename,
 opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_boundary, stability_margin
 
-project_directory =         "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/"
-case_number =               "39"
-
 # include path for power systems steady state data
-data_path =                 "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/static/"
+case_number =               "39"
+data_path =                 joinpath(@__DIR__, "cases/static/") # "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/static/"
 file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
-#file_path = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/1) Smal signal stability/SSA_module/Code_SSAmodule/WSCC_9_bus.raw"
-
 # file directory for dynamic data
-dir_dynamics =              "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/dynamic/"
+dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/") #"C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/dynamic/"
 case_name =                 "case$(case_number)" #
 
 # file directory for storing datasets
-directory =                 "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case$(case_number)/datasets/"
+directory =                 joinpath(@__DIR__, "output/case$(case_number)/datasets/") # "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case$(case_number)/datasets/"
 dataset_filename =          "ops3.csv"
 flows_filename =            "flows3.csv"
 pol_macros_filename =       "macros_polytope3.csv"
@@ -65,8 +61,8 @@ variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the IND
 
 # specify number of hyperplanes and samples in polytope and mvnd 
 hyperplanes =               10
-polytope_samples =          100
-mvnd_samples =              10000
+polytope_samples =          200
+mvnd_samples =              10
 
 # specify stopping criteria for hyperplane generation
 stopping_iteration =        20

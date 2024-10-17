@@ -28,28 +28,27 @@ Then, fit a MVND over the OPs falling within the security boundary. (what I'm do
 
 """
 
-# specify current path
-cd("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code")
-
 # activate path and show active packages
 using Pkg
-Pkg.activate(".")
+root_dir = dirname(dirname(@__DIR__))
+Pkg.activate(root_dir)
+Pkg.instantiate() 
 Pkg.status()
 
 # include support scripts
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/method.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/contingency.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/ssa_module.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/dynamics.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/directed_walk.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/acpfcorrect.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/obbt_lu.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/polytope.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/support.jl")
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/functions/write_dfs.jl")
+include(joinpath(root_dir, "functions/method.jl"))
+include(joinpath(root_dir, "functions/contingency.jl"))
+include(joinpath(root_dir, "functions/ssa_module.jl"))
+include(joinpath(root_dir, "functions/dynamics.jl"))
+include(joinpath(root_dir, "functions/directed_walk.jl"))
+include(joinpath(root_dir, "functions/acpfcorrect.jl"))
+include(joinpath(root_dir, "functions/obbt_lu.jl"))
+include(joinpath(root_dir, "functions/polytope.jl"))
+include(joinpath(root_dir, "functions/support.jl"))
+include(joinpath(root_dir, "functions/write_dfs.jl"))
 
 # import initialization module
-include("C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/init.jl")
+include(joinpath(root_dir, "init.jl"))
 using .Initialize
 
 # check if properly initialized
@@ -88,15 +87,16 @@ pf_results_infeas = []
 load_results_infeas = []
 op_info_infeas = []
 
-global nb_feasible = 0
-global nb_infeasible = 0 
-global pvpq_feasible = 0
-global initial_feasible = 0
-global correct_feasible = 0
+nb_feasible = 0
+nb_infeasible = 0 
+pvpq_feasible = 0
+initial_feasible = 0
+correct_feasible = 0
 tollerance = 1e-4
 
-for i in 1:nb_samples    
-    data_opf_verif = deepcopy(Initialize.network_data)
+data_opf_verif = deepcopy(Initialize.network_data)
+
+for i in 1:nb_samples     
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = sample_ops[i,g] 
@@ -188,8 +188,8 @@ for i in 1:nb_samples
 
     # check feasibility
     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-        global nb_feasible += 1
-        global initial_feasible += 1
+        nb_feasible += 1
+        initial_feasible += 1
         push!(pf_results_feas, PF_res0["solution"])
         push!(load_results_feas, data_opf_verif)
         push!(op_info_feas, op_flag) 
@@ -201,7 +201,7 @@ for i in 1:nb_samples
         push!(pf_results_infeas, PF_res0["solution"])
         push!(load_results_infeas, data_opf_verif)
         push!(op_info_infeas, op_flag)
-        global nb_infeasible += 1
+        nb_infeasible += 1
 
         # op placeholder
         op_flag = Dict(
@@ -279,8 +279,8 @@ for i in 1:nb_samples
 
         # check feasibility
         if op_flag["N0"] == 1 && op_flag["N1"] == 1
-            global nb_feasible += 1
-            global correct_feasible += 1
+            nb_feasible += 1
+            correct_feasible += 1
             push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_feas, data_opf_verif)
             push!(op_info_feas, op_flag) 
@@ -288,7 +288,7 @@ for i in 1:nb_samples
             println("ACPF correct feasibility:", acpfcorrect_feasibility , "\n")
         else 
             # add infeasible initial sample
-            global nb_infeasible += 1
+            nb_infeasible += 1
             push!(pf_results_infeas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_infeas, data_opf_verif)
             push!(op_info_infeas, op_flag)
@@ -345,8 +345,6 @@ if Initialize.sss_analysis == true
 
     damp_pol_feas, dist_pol_feas, _ = result_sss_feas
 
-    clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
-
     # perform small signal stability analysis for infeasible samples
     result_sss_infeas, _, _, _ = @timed begin
         sss_evaluation(Initialize.network_data, infeasible_ops_polytope, pg_numbers, vm_numbers, pd_numbers, Initialize.dir_dynamics, Initialize.case_name)
@@ -354,8 +352,6 @@ if Initialize.sss_analysis == true
 
     damp_pol_infeas, dist_pol_infeas, _ = result_sss_infeas
 end
-
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 
 ################# importance sampling ###################
@@ -422,15 +418,16 @@ pf_results_infeas_imp = []
 load_results_infeas_imp = []
 op_info_infeas_imp = []
 
-global nb_feasible_imp = 0
-global nb_infeasible_imp = 0 
-global pvpq_feasible_imp = 0
-global initial_feasible_imp = 0
-global correct_feasible_imp = 0
+nb_feasible_imp = 0
+nb_infeasible_imp = 0 
+pvpq_feasible_imp = 0
+initial_feasible_imp = 0
+correct_feasible_imp = 0
 tollerance = 1e-4
 
+data_opf_verif = deepcopy(Initialize.network_data)
+
 for i in 1:nb_imp_samples   
-    data_opf_verif = deepcopy(Initialize.network_data)
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = importance_samples[g,i] 
@@ -522,8 +519,8 @@ for i in 1:nb_imp_samples
 
     # check feasibility
     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-        global nb_feasible_imp += 1
-        global initial_feasible_imp += 1
+        nb_feasible_imp += 1
+        initial_feasible_imp += 1
         push!(pf_results_feas_imp, PF_res0["solution"])
         push!(load_results_feas_imp, data_opf_verif)
         push!(op_info_feas_imp, op_flag) 
@@ -535,7 +532,7 @@ for i in 1:nb_imp_samples
         push!(pf_results_infeas_imp, PF_res0["solution"])
         push!(load_results_infeas_imp, data_opf_verif)
         push!(op_info_infeas_imp, op_flag)
-        global nb_infeasible_imp += 1
+        nb_infeasible_imp += 1
 
         # op placeholder
         op_flag = Dict(
@@ -613,8 +610,8 @@ for i in 1:nb_imp_samples
 
         # check feasibility
         if op_flag["N0"] == 1 && op_flag["N1"] == 1
-            global nb_feasible_imp += 1
-            global correct_feasible_imp += 1
+            nb_feasible_imp += 1
+            correct_feasible_imp += 1
             push!(pf_results_feas_imp, PF_res2["solution"]["nw"]["0"])
             push!(load_results_feas_imp, data_opf_verif)
             push!(op_info_feas_imp, op_flag) 
@@ -622,7 +619,7 @@ for i in 1:nb_imp_samples
             println("ACPF correct feasibility:", acpfcorrect_feasibility , "\n")
         else 
             # add infeasible initial sample
-            global nb_infeasible_imp += 1
+            nb_infeasible_imp += 1
             push!(pf_results_infeas_imp, PF_res2["solution"]["nw"]["0"])
             push!(load_results_infeas_imp, data_opf_verif)
             push!(op_info_infeas_imp, op_flag)
@@ -673,8 +670,6 @@ if Initialize.sss_analysis == true
     end
 
     damp_mvnd_feas, dist_mvnd_feas, _ = result_sss_mvnd_feas
-
-    clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
     # perform small signal stability analysis for both feasible and infeasible samples
     result_sss_mvnd_infeas, _, _, _ = @timed begin
