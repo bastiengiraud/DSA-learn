@@ -1,42 +1,42 @@
-┌ Info: 2024-10-11T09:22:29.245 [22192:1]: Pre-Initializing Simulation States
+┌ Info: 2024-10-18T10:10:04.299 [17252:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:265
-┌ Info: 2024-10-11T09:22:29.245 [22192:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2024-10-18T10:10:04.299 [17252:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems C:\Users\bagir\.julia\packages\PowerSystems\xh3fM\src\base.jl:395
-┌ Info: 2024-10-11T09:22:29.245 [22192:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2024-10-18T10:10:04.304 [17252:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows C:\Users\bagir\.julia\packages\PowerFlows\6nw6s\src\nlsolve_ac_powerflow.jl:47
-┌ Info: 2024-10-11T09:22:29.245 [22192:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2024-10-18T10:10:04.304 [17252:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems C:\Users\bagir\.julia\packages\PowerSystems\xh3fM\src\base.jl:395
-┌ Info: 2024-10-11T09:22:29.245 [22192:1]: Residual from initial guess: max = 7.669243018426642e-12 at 109, total = 7.349584429964834e-11
+┌ Info: 2024-10-18T10:10:04.344 [17252:1]: Residual from initial guess: max = 3.7518621542886876e-10 at 68, total = 1.2134387483599712e-9
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\nlsolve_wrapper.jl:115
-┌ Info: 2024-10-11T09:22:29.262 [22192:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2024-10-18T10:10:04.349 [17252:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\nlsolve_wrapper.jl:82
-┌ Info: 2024-10-11T09:22:29.262 [22192:1]: Attaching Perturbations
+┌ Info: 2024-10-18T10:10:04.350 [17252:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:299
-┌ Info: 2024-10-11T09:22:29.262 [22192:1]: Simulations status = BUILT
+┌ Info: 2024-10-18T10:10:04.350 [17252:1]: Simulations status = BUILT
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:462
-┌ Info: 2024-10-11T09:22:29.262 [22192:1]: 
+┌ Info: 2024-10-18T10:10:04.350 [17252:1]: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                    19.6ms            13.3MiB    
+│                 Total measured:                    52.7ms            13.3MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1   19.6ms  100.0%   13.3MiB  100.0%
-│    Build Simulation Inputs                  1   1.18ms    6.0%    417KiB    3.1%
-│      Wrap Branches                          1   8.70μs    0.0%      208B    0.0%
-│      Wrap Dynamic Injectors                 1    407μs    2.1%    179KiB    1.3%
-│      Calculate MM, DAE_vector, Tota...      1   70.0μs    0.4%   59.6KiB    0.4%
-│      Wrap Static Injectors                  1   98.2μs    0.5%   34.7KiB    0.3%
-│    Pre-initialization                       1   3.09ms   15.8%   1.15MiB    8.7%
-│      Power Flow solution                    1   2.40ms   12.3%    824KiB    6.1%
-│      Initialize Static Injectors            1   1.10μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    492μs    2.5%    337KiB    2.5%
-│    Calculate Jacobian                       1   11.1ms   56.7%   9.82MiB   74.0%
-│    Make Model Function                      1   7.40μs    0.0%   3.30KiB    0.0%
-│    Initial Condition NLsolve refine...      1   4.02ms   20.5%   1.86MiB   14.0%
-│    Build Perturbations                      1   29.5μs    0.2%   10.1KiB    0.1%
-│    Make DiffEq Problem                      1    131μs    0.7%   11.6KiB    0.1%
+│  Build Simulation                           1   52.7ms  100.0%   13.3MiB  100.0%
+│    Build Simulation Inputs                  1   2.05ms    3.9%    417KiB    3.1%
+│      Wrap Branches                          1   12.4μs    0.0%      208B    0.0%
+│      Wrap Dynamic Injectors                 1    948μs    1.8%    179KiB    1.3%
+│      Calculate MM, DAE_vector, Tota...      1    297μs    0.6%   59.6KiB    0.4%
+│      Wrap Static Injectors                  1    228μs    0.4%   34.7KiB    0.3%
+│    Pre-initialization                       1   22.6ms   43.0%   1.15MiB    8.7%
+│      Power Flow solution                    1   4.86ms    9.2%    824KiB    6.1%
+│      Initialize Static Injectors            1   1.30μs    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1   17.6ms   33.4%    338KiB    2.5%
+│    Calculate Jacobian                       1   21.7ms   41.2%   9.82MiB   74.0%
+│    Make Model Function                      1   23.7μs    0.0%   3.30KiB    0.0%
+│    Initial Condition NLsolve refine...      1   5.72ms   10.9%   1.86MiB   14.0%
+│    Build Perturbations                      1    146μs    0.3%   10.1KiB    0.1%
+│    Make DiffEq Problem                      1    214μs    0.4%   11.6KiB    0.1%
 │  ───────────────────────────────────────────────────────────────────────────────
 │ 
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:487

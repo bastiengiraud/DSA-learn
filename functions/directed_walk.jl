@@ -3,7 +3,7 @@ include("method.jl")
 include("contingency.jl")
 
 # import initialization module
-init_dir = joinpath(@__DIR__, "init.jl")
+init_dir = joinpath(dirname(@__DIR__), "init.jl")
 include(init_dir)
 using .Initialize
 
@@ -313,7 +313,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
     data_build = deepcopy(data_tight)
 
     for i in closest_ops 
-        clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+        # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
         # update steady state data with setpoint data
         update_data!(data_build, pf_results_prev[i])
@@ -592,7 +592,7 @@ end
 
 function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
-    dw_dir = joinpath(@__DIR__, "DW_file_try.txt")
+    dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
     file = open(dw_dir, "w")
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
@@ -623,7 +623,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
     # avoid modifying original data
     data_build = deepcopy(data_tight)
 
-    clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+    # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
     # update steady state data with setpoint data
     update_data!(data_build, pf_results_prev[closest_op])
@@ -891,6 +891,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
     end
         
     close(file)
+    GC.gc()
 
     return directed_walk_ops, directed_walk_stability
 

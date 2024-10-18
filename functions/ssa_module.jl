@@ -1,6 +1,8 @@
 
 using Logging
 using PowerSimulationsDynamics
+using UUIDs
+using Base.Filesystem: mkpath
 
 include("support.jl")
 
@@ -59,10 +61,15 @@ end
 
 #Compute the two small-signal indices
 function small_signal_module(full_model)
+    # Create a unique temporary directory 
+    parent_dir = tempdir()
+    unique_id = "tempdir_$(UUIDs.uuid4())"
+    temp_dir = mktempdir(parent_dir; prefix="$unique_id", cleanup=true)
+
     ss_stability = false
     sys = full_model
     time_span = (0.0, 30.0)
-    sim_studied = Simulation(ResidualModel, sys , pwd(), time_span) # , initialize_simulation = true)#, initial_conditions = initial_conditions) # origineel
+    sim_studied = Simulation(ResidualModel, sys , temp_dir, time_span) # , initialize_simulation = true)#, initial_conditions = initial_conditions) # origineel
     read_initial_conditions(sim_studied)
     # setpoints = get_setpoints(sim_studied)
     res_studied = small_signal_analysis(sim_studied)
@@ -80,6 +87,8 @@ function small_signal_module(full_model)
         "damping" => damping,
         "eigenvalues" => eigenvalues
     )
+
+    rm(temp_dir; force=true, recursive=true)
 
     return stability
 end
@@ -124,7 +133,8 @@ function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_nu
         push!(total_eigen, stability["eigenvalues"])
 
         if i % 500 == 0 # clear temp folder after every 500 iterations
-            clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+            #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+            continue
         end
     
     end

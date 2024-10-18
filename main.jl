@@ -2,8 +2,6 @@
 
 Next necessary steps:
 
-- get baselines running on hpc, make directories work, remove global, avoid deepcopy, try for small number samples
-
 - Get DWs in parallel, for all initialization points?
 
 - do directed walks only for the most critical contingency when considering contingencies
@@ -30,25 +28,33 @@ Maybe also voltage collapse; point where you can't solve opf anymore
 
 # activate current path and initialize environment
 using Pkg
+using Distributed
+
+# Activate the environment and instantiate packages
 Pkg.activate(@__DIR__)
 Pkg.instantiate() 
 Pkg.status()
 
-# include support scripts
+# Set the current working directory for all workers (optional but recommended)
+cd(@__DIR__)
+
+# Include support scripts on the main process (only if they're not required on workers)
 include("functions/method.jl")
 include("functions/contingency.jl")
-include("functions/ssa_module.jl")
-include("functions/dynamics.jl")
-include("functions/directed_walk.jl")
 include("functions/acpfcorrect.jl")
 include("functions/obbt_lu.jl")
 include("functions/polytope.jl")
 include("functions/support.jl")
 include("functions/write_dfs.jl")
+include("functions/directed_walk.jl")
+include("functions/ssa_module.jl")
+include("functions/dynamics.jl")
 
-# import initialization module
+# Include initialization module only on the main process
 include("init.jl")
 using .Initialize
+
+clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 # check if properly initialized
 check_initialization()
@@ -96,11 +102,8 @@ if Initialize.sss_analysis == true
     damp_pol_infeas, dist_pol_infeas, _ = result_sss_infeas
 end
 
-# Perform directed walks on the samples which are closest to the stability boundary
-if Initialize.directed_walks == true
-    distance = [0.015, 0.01, 0.005] # distance determining step size, (9 bus [0.02, 0.01, 0.005])(39 bus [0.015, 0.01, 0.005])
-    alpha = [2, 1.5, 1, 0.5] # step size, (9 bus [2, 1, 0.5, 0.1]) (39 bus ops 1 [2, 1, 0.5, 0.25)  ops2( [0.5, 0.25, 0.1, 0.025] )
 
+if Initialize.directed_walks == true 
     # obtain smalles Pmax to determin minimal distance between OPs R
     min_pmax = 1000
     for i in 1:length(data_tight_tmp["gen"])
@@ -111,22 +114,100 @@ if Initialize.directed_walks == true
         end
     end
 
-    # determine minimal distance between OPs. Also take into account that normal step size includes gradient!
-    R_min = minimum(alpha)*min_pmax #*Initialize.k_max
+    distance = Initialize.distance  # Distance determining step size
+    alpha = Initialize.alpha  # Step size
 
-    # get feasible and stable ops with spacing R from each other
+    # Determine minimal distance between OPs
+    R_min = minimum(alpha) * min_pmax * 0.5
+
+    # Get feasible and stable ops with spacing R from each other
     cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)
     num_dws = length(cls_op)
 
-    # Perform directed walks
-    start_time_dws = time()
-    directed_walk_ops, directed_walk_stability = DW_step(data_tight_tmp, feasible_ops_polytope, closest_ops, cls_op, Initialize.variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
-    end_time_dws = time()
-    elapsed_time_dws = end_time_dws - start_time_dws
+    if Initialize.dw_computation == "parallel"
 
-    # check AC feasibility of operating points after DWs
+        # Perform directed walks in parallel using distributed workers
+        start_time_dws = time()
+
+        # Add workers for distributed parallelism
+        addprocs(3)  # Adjust based on your needs
+        println("Total active workers: ", nworkers())
+
+        # Activate the environment and instantiate packages
+        @everywhere begin 
+            using Pkg
+            Pkg.activate(@__DIR__)
+            #@everywhere Pkg.instantiate() 
+
+            # Set the current working directory for all workers (optional but recommended)
+            cd(@__DIR__)
+
+            # Include support scripts on the main process (only if they're not required on workers)
+            include("functions/method.jl")
+            include("functions/contingency.jl")
+            include("functions/acpfcorrect.jl")
+            include("functions/obbt_lu.jl")
+            include("functions/polytope.jl")
+            include("functions/support.jl")
+            include("functions/write_dfs.jl")
+            include("functions/directed_walk.jl")
+            include("functions/ssa_module.jl")
+            include("functions/dynamics.jl")
+
+            # Include initialization module only on the main process
+            include("init.jl")
+            using .Initialize
+
+            # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+
+        end
+
+        @everywhere begin # $ 'copies'/broadcasts the variable from the local process
+            data_tight_tmp = $data_tight_tmp
+            feasible_ops_polytope = $feasible_ops_polytope
+            closest_ops = $closest_ops
+            cls_op = $cls_op
+            pf_results_feas_polytope = $pf_results_feas_polytope
+            num_dws = length(cls_op)
+            variable_loads = $variable_loads
+            distance = $distance
+            alpha = $alpha
+
+        end
+
+        # Perform directed walks in parallel using Distributed.@distributed
+        print("I'm trying to do parallel computing.... fingers crossed!")
+        results = @sync @distributed (vcat) for i in 1:num_dws ## TRY WITHOUT @SYNC! or with ASYNC
+            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+            (dw_ops, dw_stability)  # Return a tuple of results, the last line is collected by the @distributed macro. same as 'return'.
+        end
+
+        # remove workers and continue code on one core
+        rmprocs(workers())
+
+        # Extracting `dw_ops` and `dw_stability` using comprehension
+        directed_walk_ops = vcat([result[1] for result in results]...)
+        directed_walk_stability = vcat([result[2] for result in results]...)
+
+
+        end_time_dws = time()
+        elapsed_time_dws = end_time_dws - start_time_dws
+
+    elseif Initialize.dw_computation == "series"
+
+        # Perform directed walks
+        start_time_dws = time()
+        directed_walk_ops, directed_walk_stability = DW_step(data_tight_tmp, feasible_ops_polytope, closest_ops, cls_op, Initialize.variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+        end_time_dws = time()
+        elapsed_time_dws = end_time_dws - start_time_dws
+
+    end
+
+    println("Directed walks completed in $(elapsed_time_dws) seconds")
+
+    # Check AC feasibility of operating points after directed walks
     feasible_ops_dws, pf_results_feas_dws, op_info_feas_dws, infeasible_ops_dws, pf_results_infeas_dws, op_info_infeas_dws, nb_feasible_dws, nb_infeasible_dws, initial_feasible_dws, damp_dws_feas, damp_dws_infeas, dist_dws_feas, dist_dws_infeas = dw_ops_feasibility(Initialize.network_data, data_tight_tmp, Initialize.variable_loads, directed_walk_ops, directed_walk_stability)
-    
+
 end
 
 
