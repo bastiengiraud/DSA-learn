@@ -1,6 +1,6 @@
 # activate path and show active packages
 using Pkg
-Pkg.activate(@__DIR__)
+Pkg.activate(dirname(@__DIR__))
 Pkg.status()
 
 using PowerModels
@@ -20,14 +20,14 @@ include("support.jl")
 
 
 # include path for power systems data
-data_path = joinpath(@__DIR__, "cases/static/")
+data_path = joinpath(dirname(@__DIR__), "cases/static/")
 #file_path = joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri
 #file_path = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/1) Smal signal stability/SSA_module/Code_SSAmodule/WSCC_9_bus.raw"
 file_path = joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") #  IEEE118_v32.raw
 #file_path =                  "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/240busWECC_2018_PSS33.raw"
 
 # generator data
-dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/")
+dir_dynamics =              joinpath(dirname(@__DIR__), "cases/dynamic/")
 case_name =                 "case162"
 #file_dyn =                  "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/dynamic/IEEE 39 bus.dyr"
 #file_dyn =                  "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/240busWECC_2018_PSS.dyr"
@@ -64,7 +64,7 @@ time_span = (0.0, 30.0)
 loads = get_components(c -> c isa ElectricLoad, ElectricLoad, syst)
 load_names = map(c -> get_name(c), loads)
 l_device = get_component(ElectricLoad, syst, "bus19") # PowerSystems.ElectricLoad
-l_change = PowerSimulationsDynamics.LoadChange(1.0, l_device, :P_ref, 0.41) # from 0.5152
+l_change = PowerSimulationsDynamics.LoadChange(1.0, l_device, :P_ref, 0.45) # from 0.5152
 l_trip = PowerSimulationsDynamics.LoadTrip(1.0, l_device)
 
 # define simulation

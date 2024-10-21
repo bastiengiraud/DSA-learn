@@ -67,41 +67,84 @@ function dfs_init(feasible_ops, infeasible_ops, op_info_feasible, op_info_infeas
         df_DW_i.N0 = zeros(nrow(df_DW_i))
     end
 
-    flow_viol_feas = []
-    flow_viol_infeas = []
+    N0P_feas = []
+    N0P_infeas = []
 
-    over_volt_feas = []
-    over_volt_infeas = []
+    N0Q_feas = []
+    N0Q_infeas = []
 
-    under_volt_feas = []
-    under_volt_infeas = []
+    N0L_feas = []
+    N0L_infeas = []
+
+    N0OV_feas = []
+    N0OV_infeas = []
+
+    N0UV_feas = []
+    N0UV_infeas = []
+
+    N1L_feas = []
+    N1L_infeas = []
+
+    N1OV_feas = []
+    N1OV_infeas = []
+
+    N1UV_feas = []
+    N1UV_infeas = []
 
     N1_feas = []
     N1_infeas = []
 
     for i in 1:length(feasible_ops)
-        push!(flow_viol_feas, op_info_feasible[i]["N1_flow"])
-        push!(over_volt_feas, op_info_feasible[i]["N1_over_volt"])
-        push!(under_volt_feas, op_info_feasible[i]["N1_under_volt"])
+        push!(N0P_feas, op_info_feasible[i]["N0P"])
+        push!(N0Q_feas, op_info_feasible[i]["N0Q"])
+        push!(N0L_feas, op_info_feasible[i]["N0L"])
+        push!(N0OV_feas, op_info_feasible[i]["N0OV"])
+        push!(N0UV_feas, op_info_feasible[i]["N0UV"])
+
+        push!(N1L_feas, op_info_feasible[i]["N1L"])
+        push!(N1OV_feas, op_info_feasible[i]["N1OV"])
+        push!(N1UV_feas, op_info_feasible[i]["N1UV"])
         push!(N1_feas, op_info_feasible[i]["N1"])
     end
 
     for i in 1:length(infeasible_ops)
-        push!(flow_viol_infeas, op_info_infeasible[i]["N1_flow"])
-        push!(over_volt_infeas, op_info_infeasible[i]["N1_over_volt"])
-        push!(under_volt_infeas, op_info_infeasible[i]["N1_under_volt"])
+        push!(N0P_infeas, op_info_infeasible[i]["N0P"])
+        push!(N0Q_infeas, op_info_infeasible[i]["N0Q"])
+        push!(N0L_infeas, op_info_infeasible[i]["N0L"])
+        push!(N0OV_infeas, op_info_infeasible[i]["N0OV"])
+        push!(N0UV_infeas, op_info_infeasible[i]["N0UV"])
+
+        push!(N1L_infeas, op_info_infeasible[i]["N1L"])
+        push!(N1OV_infeas, op_info_infeasible[i]["N1OV"])
+        push!(N1UV_infeas, op_info_infeasible[i]["N1UV"])
         push!(N1_infeas, op_info_infeasible[i]["N1"])
     end
 
+    # Add N_0 column based on feasibility
+    df_DW_f.N0P = N0P_feas 
+    df_DW_i.N0P = N0P_infeas 
+
+    df_DW_f.N0Q = N0Q_feas 
+    df_DW_i.N0Q = N0Q_infeas 
+
+    df_DW_f.N0L = N0L_feas 
+    df_DW_i.N0L = N0L_infeas 
+
+    df_DW_f.N0OV = N0OV_feas 
+    df_DW_i.N0OV = N0OV_infeas 
+
+    df_DW_f.N0UV = N0UV_feas 
+    df_DW_i.N0UV = N0UV_infeas 
+
     # Add N_1 column based on feasibility
-    df_DW_f.flow_viol = flow_viol_feas # [1:length(df_DW_f.N0)]
-    df_DW_i.flow_viol = flow_viol_infeas # -1 * ones(nrow(df_DW_i))
+    df_DW_f.N1L = N1L_feas 
+    df_DW_i.N1L = N1L_infeas 
 
-    df_DW_f.over_volt = over_volt_feas # over_index[1:length(df_DW_f.Feas)]
-    df_DW_i.over_volt = over_volt_infeas # -1 * ones(nrow(df_DW_i))
+    df_DW_f.N1OV = N1OV_feas 
+    df_DW_i.N1OV_infeas = N1OV_infeas 
 
-    df_DW_f.under_volt = under_volt_feas # under_index[1:length(df_DW_f.Feas)]
-    df_DW_i.under_volt = under_volt_infeas # -1 * ones(nrow(df_DW_i))
+    df_DW_f.N1UV = N1UV_feas 
+    df_DW_i.N1UV = N1UV_infeas 
 
     df_DW_f.N1 = N1_feas # under_index[1:length(df_DW_f.Feas)]
     df_DW_i.N1 = N1_infeas # -1 * ones(nrow(df_DW_i))

@@ -126,7 +126,7 @@ def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, FP_dat
     plt.show()
 
 # specify test set: 'all', 'HIC', 'noHIC'
-test_index = "HIC"
+test_index = "all"
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
@@ -342,7 +342,6 @@ print("Test f1_score train imp, test method:", f1_imp_method)
 print("Test f1_score train imp, test lhc:", f1_imp_lhc)
 
 
-
 # Evaluate the classifier false positive rate. det_curve = fpr, fnr, threshold
 fpr_method, FP_list_method, FN_list_method = fpr_score(y_test_method, y_pred_method)
 fpr_method_lhc, FP_list_method_lhc, FN_list_method_lhc = fpr_score(y_test_lhc, y_pred_method_lhc)
@@ -457,7 +456,7 @@ FN_damping_lhc = pd.concat([damping_data_lhc[FN_list_lhc], damping_data_method[F
 FN_damping_imp = pd.concat([damping_data_imp[FN_list_imp], damping_data_method[FN_list_imp_method], damping_data_lhc[FN_list_imp_lhc]])
 
 # plot the damping of the missclassified OPs
-x_lb = 0
+x_lb = -1
 bar_width = 0.002
 plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping vs number of OPs")
 plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping vs number of OPs")

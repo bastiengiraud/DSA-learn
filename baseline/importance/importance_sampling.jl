@@ -55,7 +55,7 @@ using .Initialize
 check_initialization_imp()
 
 variable_loads = Initialize.variable_loads
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 # Record start time
 start_time = time()
@@ -116,10 +116,15 @@ for i in 1:nb_samples
     # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
     op_flag = Dict(
         "N0" => 1, # flag for base-case feasibility
+        "N0P" => 0.0, # active power violation
+        "N0Q" => 0.0, # active power violation
+        "N0OV" => 0.0, # amount over voltage violation
+        "N0UV" => 0.0, # amount under voltage violation
+        "N0L" => 0.0, # amount line flow violation
         "N1" => 1, # flag for N1 feasibility
-        "N1_over_volt" => 0.0, # amount over voltage violation
-        "N1_under_volt" => 0.0, # amount under voltage violation
-        "N1_flow" => 0.0 # amount flow violation
+        "N1OV" => 0.0, # amount over voltage violation
+        "N1UV" => 0.0, # amount under voltage violation
+        "N1L" => 0.0 # amount line flow violation
     )
 
     # add contingencies
@@ -171,6 +176,11 @@ for i in 1:nb_samples
             # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
             if initial_feasibility != true    
                 op_flag["N0"] = 0
+                op_flag["N0P"] += pg_vio
+                op_flag["N0Q"] += qg_vio
+                op_flag["N0OV"] += vm_vio_over
+                op_flag["N0UV"] += vm_vio_under
+                op_flag["N0L"] += sm_vio
             end
         end
 
@@ -178,9 +188,9 @@ for i in 1:nb_samples
             # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
             if initial_feasibility != true
                 op_flag["N1"] = 0
-                op_flag["N1_over_volt"] += vm_vio_over
-                op_flag["N1_under_volt"] += vm_vio_under
-                op_flag["N1_flow"] += sm_vio
+                op_flag["N1OV"] += vm_vio_over
+                op_flag["N1UV"] += vm_vio_under
+                op_flag["N1L"] += sm_vio
             end
         end
 
@@ -188,8 +198,8 @@ for i in 1:nb_samples
 
     # check feasibility
     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-        nb_feasible += 1
-        initial_feasible += 1
+        global nb_feasible += 1
+        global initial_feasible += 1
         push!(pf_results_feas, PF_res0["solution"])
         push!(load_results_feas, data_opf_verif)
         push!(op_info_feas, op_flag) 
@@ -201,15 +211,20 @@ for i in 1:nb_samples
         push!(pf_results_infeas, PF_res0["solution"])
         push!(load_results_infeas, data_opf_verif)
         push!(op_info_infeas, op_flag)
-        nb_infeasible += 1
+        global nb_infeasible += 1
 
         # op placeholder
         op_flag = Dict(
             "N0" => 1, # flag for base-case feasibility
+            "N0P" => 0.0, # active power violation
+            "N0Q" => 0.0, # active power violation
+            "N0OV" => 0.0, # amount over voltage violation
+            "N0UV" => 0.0, # amount under voltage violation
+            "N0L" => 0.0, # amount line flow violation
             "N1" => 1, # flag for N1 feasibility
-            "N1_over_volt" => 0.0, # amount over voltage violation
-            "N1_under_volt" => 0.0, # amount under voltage violation
-            "N1_flow" => 0.0 # amount flow violation
+            "N1OV" => 0.0, # amount over voltage violation
+            "N1UV" => 0.0, # amount under voltage violation
+            "N1L" => 0.0 # amount line flow violation
         )
 
         # if not feasible, map to closest point on feasible region
@@ -262,6 +277,11 @@ for i in 1:nb_samples
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                 if acpfcorrect_feasibility != true
                     op_flag["N0"] = 0
+                    op_flag["N0P"] += pg_vio
+                    op_flag["N0Q"] += qg_vio
+                    op_flag["N0OV"] += vm_vio_over
+                    op_flag["N0UV"] += vm_vio_under
+                    op_flag["N0L"] += sm_vio
                 end
             end
 
@@ -269,9 +289,9 @@ for i in 1:nb_samples
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                 if acpfcorrect_feasibility != true
                     op_flag["N1"] = 0
-                    op_flag["N1_over_volt"] += vm_vio_over
-                    op_flag["N1_under_volt"] += vm_vio_under
-                    op_flag["N1_flow"] += sm_vio
+                    op_flag["N1OV"] += vm_vio_over
+                    op_flag["N1UV"] += vm_vio_under
+                    op_flag["N1L"] += sm_vio
                 end
             end
 
@@ -279,8 +299,8 @@ for i in 1:nb_samples
 
         # check feasibility
         if op_flag["N0"] == 1 && op_flag["N1"] == 1
-            nb_feasible += 1
-            correct_feasible += 1
+            global nb_feasible += 1
+            global correct_feasible += 1
             push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_feas, data_opf_verif)
             push!(op_info_feas, op_flag) 
@@ -288,7 +308,7 @@ for i in 1:nb_samples
             println("ACPF correct feasibility:", acpfcorrect_feasibility , "\n")
         else 
             # add infeasible initial sample
-            nb_infeasible += 1
+            global nb_infeasible += 1
             push!(pf_results_infeas, PF_res2["solution"]["nw"]["0"])
             push!(load_results_infeas, data_opf_verif)
             push!(op_info_infeas, op_flag)
@@ -328,7 +348,7 @@ infeasible_ops_polytope = infeasible_ops
 pf_results_infeas_polytope = pf_results_infeas
 op_info_infeas_pol = op_info_infeas
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 
 # Perform small-signal stability analysis on all samples
@@ -447,10 +467,15 @@ for i in 1:nb_imp_samples
     # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
     op_flag = Dict(
         "N0" => 1, # flag for base-case feasibility
+        "N0P" => 0.0, # active power violation
+        "N0Q" => 0.0, # active power violation
+        "N0OV" => 0.0, # amount over voltage violation
+        "N0UV" => 0.0, # amount under voltage violation
+        "N0L" => 0.0, # amount line flow violation
         "N1" => 1, # flag for N1 feasibility
-        "N1_over_volt" => 0.0, # amount over voltage violation
-        "N1_under_volt" => 0.0, # amount under voltage violation
-        "N1_flow" => 0.0 # amount flow violation
+        "N1OV" => 0.0, # amount over voltage violation
+        "N1UV" => 0.0, # amount under voltage violation
+        "N1L" => 0.0 # amount line flow violation
     )
 
     # add contingencies
@@ -502,6 +527,11 @@ for i in 1:nb_imp_samples
             # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
             if initial_feasibility != true    
                 op_flag["N0"] = 0
+                op_flag["N0P"] += pg_vio
+                op_flag["N0Q"] += qg_vio
+                op_flag["N0OV"] += vm_vio_over
+                op_flag["N0UV"] += vm_vio_under
+                op_flag["N0L"] += sm_vio
             end
         end
 
@@ -509,9 +539,9 @@ for i in 1:nb_imp_samples
             # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
             if initial_feasibility != true
                 op_flag["N1"] = 0
-                op_flag["N1_over_volt"] += vm_vio_over
-                op_flag["N1_under_volt"] += vm_vio_under
-                op_flag["N1_flow"] += sm_vio
+                op_flag["N1OV"] += vm_vio_over
+                op_flag["N1UV"] += vm_vio_under
+                op_flag["N1L"] += sm_vio
             end
         end
 
@@ -519,8 +549,8 @@ for i in 1:nb_imp_samples
 
     # check feasibility
     if op_flag["N0"] == 1 && op_flag["N1"] == 1
-        nb_feasible_imp += 1
-        initial_feasible_imp += 1
+        global nb_feasible_imp += 1
+        global initial_feasible_imp += 1
         push!(pf_results_feas_imp, PF_res0["solution"])
         push!(load_results_feas_imp, data_opf_verif)
         push!(op_info_feas_imp, op_flag) 
@@ -532,15 +562,20 @@ for i in 1:nb_imp_samples
         push!(pf_results_infeas_imp, PF_res0["solution"])
         push!(load_results_infeas_imp, data_opf_verif)
         push!(op_info_infeas_imp, op_flag)
-        nb_infeasible_imp += 1
+        global nb_infeasible_imp += 1
 
         # op placeholder
         op_flag = Dict(
             "N0" => 1, # flag for base-case feasibility
+            "N0P" => 0.0, # active power violation
+            "N0Q" => 0.0, # active power violation
+            "N0OV" => 0.0, # amount over voltage violation
+            "N0UV" => 0.0, # amount under voltage violation
+            "N0L" => 0.0, # amount line flow violation
             "N1" => 1, # flag for N1 feasibility
-            "N1_over_volt" => 0.0, # amount over voltage violation
-            "N1_under_volt" => 0.0, # amount under voltage violation
-            "N1_flow" => 0.0 # amount flow violation
+            "N1OV" => 0.0, # amount over voltage violation
+            "N1UV" => 0.0, # amount under voltage violation
+            "N1L" => 0.0 # amount line flow violation
         )
 
         # if not feasible, map to closest point on feasible region
@@ -593,6 +628,11 @@ for i in 1:nb_imp_samples
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                 if acpfcorrect_feasibility != true
                     op_flag["N0"] = 0
+                    op_flag["N0P"] += pg_vio
+                    op_flag["N0Q"] += qg_vio
+                    op_flag["N0OV"] += vm_vio_over
+                    op_flag["N0UV"] += vm_vio_under
+                    op_flag["N0L"] += sm_vio
                 end
             end
 
@@ -600,9 +640,9 @@ for i in 1:nb_imp_samples
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                 if acpfcorrect_feasibility != true
                     op_flag["N1"] = 0
-                    op_flag["N1_over_volt"] += vm_vio_over
-                    op_flag["N1_under_volt"] += vm_vio_under
-                    op_flag["N1_flow"] += sm_vio
+                    op_flag["N1OV"] += vm_vio_over
+                    op_flag["N1UV"] += vm_vio_under
+                    op_flag["N1L"] += sm_vio
                 end
             end
 
@@ -610,8 +650,8 @@ for i in 1:nb_imp_samples
 
         # check feasibility
         if op_flag["N0"] == 1 && op_flag["N1"] == 1
-            nb_feasible_imp += 1
-            correct_feasible_imp += 1
+            global nb_feasible_imp += 1
+            global correct_feasible_imp += 1
             push!(pf_results_feas_imp, PF_res2["solution"]["nw"]["0"])
             push!(load_results_feas_imp, data_opf_verif)
             push!(op_info_feas_imp, op_flag) 
@@ -619,7 +659,7 @@ for i in 1:nb_imp_samples
             println("ACPF correct feasibility:", acpfcorrect_feasibility , "\n")
         else 
             # add infeasible initial sample
-            nb_infeasible_imp += 1
+            global nb_infeasible_imp += 1
             push!(pf_results_infeas_imp, PF_res2["solution"]["nw"]["0"])
             push!(load_results_infeas_imp, data_opf_verif)
             push!(op_info_infeas_imp, op_flag)
@@ -658,7 +698,7 @@ infeasible_ops_mvnd = infeasible_ops_imp
 pf_results_infeas_mvnd = pf_results_infeas_imp
 op_info_infeas_mvnd = op_info_infeas_imp
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 
 # Perform small-signal stability analysis on all samples
@@ -690,7 +730,7 @@ end_time = time()
 # Calculate elapsed time
 elapsed_time = end_time - start_time
 println("Elapsed time: ", elapsed_time, " seconds")
-df_macros_total(elapsed_time, num_boundary_ops, 0, 0, Initialize.directory, Initialize.imp_macros)
+df_macros_total(elapsed_time, num_boundary_ops, 0, 0.0, Initialize.directory, Initialize.imp_macros)
 
 
 # write dataframe to CSV
@@ -707,7 +747,7 @@ output_path_dt_data = joinpath(Initialize.directory, Initialize.imp_flows_filena
 CSV.write(output_path_dt_data, df_flow; delim=';')  
 
 # clear temp folder
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 
 

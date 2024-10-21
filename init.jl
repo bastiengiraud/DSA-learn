@@ -26,28 +26,28 @@ case_name =                 "case$(case_number)" #
 
 # file directory for storing datasets
 directory =                 joinpath(@__DIR__, "output/case$(case_number)/datasets/") 
-dataset_filename =          "ops3.csv"
-flows_filename =            "flows3.csv"
-pol_macros_filename =       "macros_polytope3.csv"
-mvnd_macros_filename =      "macros_mvnd3.csv"
-method_macros =             "macros_method3.csv"
+dataset_filename =          "$(case_number)bus_method_ops.csv"
+flows_filename =            "$(case_number)bus_method_flows.csv"
+pol_macros_filename =       "$(case_number)bus_method_macros_polytope.csv"
+mvnd_macros_filename =      "$(case_number)bus_method_macros_mvnd.csv"
+method_macros =             "$(case_number)9bus_method_macros_method.csv"
 
 # LHC sampling initialization
-lhc_dataset_filename =      "lhc_ops.csv"
-lhc_flows_filename =        "lhc_flows.csv"
-lhc_macros =                "macros_lhc.csv"
-lhc_samples =               10_000
+lhc_dataset_filename =      "$(case_number)bus_lhc_ops.csv"
+lhc_flows_filename =        "$(case_number)bus_lhc_flows.csv"
+lhc_macros =                "$(case_number)bus_macros_lhc.csv"
+lhc_samples =               10000
 
 # optimization based sampling
 opt_dataset_filename =      "opt_ops.csv"
 opt_samples =               500
 
 # importance sampling
-imp_dataset_filename =      "imp_ops2.csv"
-imp_flows_filename =        "imp_flows2.csv"
-imp_macros =                "macros_imp.csv"
-lhc_imp_samples =           2_500
-nb_imp_samples =            10_000
+imp_dataset_filename =      "$(case_number)bus_imp_ops.csv"
+imp_flows_filename =        "$(case_number)bus_imp_flows.csv"
+imp_macros =                "$(case_number)bus_macros_imp.csv"
+lhc_imp_samples =           2500
+nb_imp_samples =            10000
 
 # initialize data
 network_data = PowerModels.parse_file(file_path) 
@@ -60,9 +60,9 @@ mvnd_sampling =             true
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
-hyperplanes =               5
-polytope_samples =          250
-mvnd_samples =              100
+hyperplanes =               100
+polytope_samples =          2500
+mvnd_samples =              10000
 
 # specify stopping criteria for hyperplane generation
 stopping_iteration =        20
@@ -78,8 +78,8 @@ stability_margin =          0.0025
 
 # specify for how many of the eigenvalues closest to the imaginary axis you want to do DWs
 dw_computation =            "parallel"
-k_max =                     3
-k_max_HIC =                 3
+k_max =                     30
+k_max_HIC =                 15
 distance =                  [0.015, 0.01, 0.005]
 alpha =                     [2, 1.5, 1, 0.5]
 

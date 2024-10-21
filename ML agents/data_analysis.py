@@ -47,11 +47,11 @@ upper_bound = stability_boundary + margin
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
-flow_name_method = 'flows2.csv' # DT method data
+flow_name_method = '39bus_method_flows.csv' # DT method data
 flow_name_lhc = 'lhc_flows.csv'
 flow_name_imp = 'imp_flows.csv' 
 
-file_name_method = 'ops2.csv' # DT method data
+file_name_method = '39bus_method_ops.csv' # DT method data
 file_name_lhc = 'lhc_ops.csv'
 file_name_imp = 'imp_ops.csv' 
 
@@ -122,9 +122,9 @@ print(" ")
 stable_method = flow_data_method['stable'].value_counts()[1]
 stable_method_percentage = (stable_method/method_samples)*100
 stable_lhc = flow_data_lhc['stable'].value_counts()[1]
-stable_lhc_percentage = (stable_lhc/method_samples)*100
+stable_lhc_percentage = (stable_lhc/lhc_samples)*100
 stable_imp = flow_data_imp['stable'].value_counts()[1]
-stable_imp_percentage = (stable_imp/method_samples)*100
+stable_imp_percentage = (stable_imp/imp_samples)*100
 
 print("number of small signal stable method samples: ", stable_method)
 print("number of small signal stable lhc samples: ", stable_lhc)
@@ -135,9 +135,9 @@ print(" ")
 secure_method = flow_data_method[(flow_data_method['feasible'] == 1) & (flow_data_method['stable'] == 1)].shape[0]
 secure_method_percentage = (secure_method/method_samples)*100
 secure_lhc = flow_data_lhc[(flow_data_lhc['feasible'] == 1) & (flow_data_lhc['stable'] == 1)].shape[0]
-secure_lhc_percentage = (secure_lhc/method_samples)*100
+secure_lhc_percentage = (secure_lhc/lhc_samples)*100
 secure_imp = flow_data_imp[(flow_data_imp['feasible'] == 1) & (flow_data_imp['stable'] == 1)].shape[0]
-secure_imp_percentage = (secure_imp/method_samples)*100
+secure_imp_percentage = (secure_imp/imp_samples)*100
 
 print("number of secure method samples: ", secure_method)
 print("number of secure lhc samples: ", secure_lhc)
@@ -148,9 +148,9 @@ print(" ")
 boundary_op_method = op_data_method[(op_data_method['damping'] > lower_bound) & (op_data_method['damping'] < upper_bound)].shape[0]
 boundary_method_percentage = (boundary_op_method/method_samples)*100
 boundary_op_lhc = op_data_lhc[(op_data_lhc['damping'] > lower_bound) & (op_data_lhc['damping'] < upper_bound)].shape[0]
-boundary_lhc_percentage = (boundary_op_lhc/method_samples)*100
+boundary_lhc_percentage = (boundary_op_lhc/lhc_samples)*100
 boundary_op_imp = op_data_imp[(op_data_imp['damping'] > lower_bound) & (op_data_imp['damping'] < upper_bound)].shape[0]
-boundary_imp_percentage = (boundary_op_imp/method_samples)*100
+boundary_imp_percentage = (boundary_op_imp/imp_samples)*100
 
 print("number of method samples in boundary region: ", boundary_op_method)
 print("number of lhc samples in boundary region: ", boundary_op_lhc)

@@ -592,8 +592,8 @@ end
 
 function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
-    dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
-    file = open(dw_dir, "w")
+    #dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
+    #file = open(dw_dir, "w")
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
@@ -643,9 +643,9 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
 
     stability = small_signal_module(sys_studied)
 
-    println(file, "Initial damping :", stability["damping"])
-    println(file, "Initial distance :", stability["distance"])   
-    println(file, "Initial eigenvalue :", stability["eigenvalues"])   
+    #println(file, "Initial damping :", stability["damping"])
+    #println(file, "Initial distance :", stability["distance"])   
+    #println(file, "Initial eigenvalue :", stability["eigenvalues"])   
 
     current_damping = stability["damping"]
     damping_array_global = []
@@ -682,19 +682,19 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
         end
 
         ############ check to which side the step should be taken
-        println(file, "Directed walk number: $DW __________________", "\n")
+        #println(file, "Directed walk number: $DW __________________", "\n")
         max_grad = max_gradients(data_build, for_grad, back_grad)
         sP = get_SetPoint(data_build) # get the generator setpoints
         dw_step_gen(data_build, epsilon, max_grad) # take a directed walk step along all dimensions
         new_SP = get_SetPoint(data_build) # get new generator setpoints
 
         # some print statements to check directed walks
-        println(file, "these are the max gradients: ", join(max_grad), ", ") # write the current generator setpoints to file
+        #println(file, "these are the max gradients: ", join(max_grad), ", ") # write the current generator setpoints to file
         #println(file, "these are the forward gradients: ", join(for_grad), ", ") # write the current generator setpoints to file
         #println(file, "these are the backward gradients: ", join(back_grad), ", ") # write the current generator setpoints to file
-        println(file, "this is the epsilon: ", join(epsilon), ", ") # write the current generator setpoints to file
-        println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
-        println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+        #println(file, "this is the epsilon: ", join(epsilon), ", ") # write the current generator setpoints to file
+        #println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+        #println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
     
         # check small signal stability of perturbered generator and obtain stability indices
         sys_studied = create_system(data_build)
@@ -703,8 +703,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
         stability = small_signal_module(sys_studied)
 
         # some print statements to check directed walks
-        println(file, "damping of new setpoint: ", stability["damping"])
-        println(file, "distance of new setpoint: ", stability["distance"])
+        #println(file, "damping of new setpoint: ", stability["damping"])
+        #println(file, "distance of new setpoint: ", stability["distance"])
 
         push!(plot_damping, stability["damping"])
         push!(plot_dist, stability["distance"])
@@ -713,8 +713,9 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
         
         # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
         if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
-            push!(directed_walk_ops, OP_tmp)
-            push!(directed_walk_stability, (stability["damping"], stability["distance"]))
+            #push!(directed_walk_ops, OP_tmp)
+            #push!(directed_walk_stability, (stability["damping"], stability["distance"]))
+            print("Not adding OPs outside of HIC region.", "\n")
         else
             print("This OP already exists, not adding it to the dataset.", "\n")
         end
@@ -732,6 +733,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
 
         if (stability_boundary - stability_margin < current_damping) && 
             (current_damping < stability_boundary + stability_margin)
+
+            # add the first point in the HIC region
+            push!(directed_walk_ops, OP_tmp)
+            push!(directed_walk_stability, (stability["damping"], stability["distance"]))
 
             ########### sample points around first HIC point
             print("OP number: ", op_number, ", Sampling around first HIC point __________________", "\n")
@@ -754,10 +759,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                     construct_dynamic_model(sys_studied, dir_dynamics, case_name)
                     stability = small_signal_module(sys_studied)
 
-                    println(file, "Surrounding HIC setpoint up step __________________", "\n")
-                    println(file, "damping of surround setpoint: ", stability["damping"])
-                    println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
-                    println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+                    #println(file, "Surrounding HIC setpoint up step __________________", "\n")
+                    #println(file, "damping of surround setpoint: ", stability["damping"])
+                    #println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+                    #println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
                     
                     # get setpoint
                     OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
@@ -785,10 +790,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                     construct_dynamic_model(sys_studied, dir_dynamics, case_name)
                     stability = small_signal_module(sys_studied)
 
-                    println(file, "Surrounding HIC setpoint down step__________________", "\n")
-                    println(file, "damping of surround setpoint: ", stability["damping"])
-                    println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
-                    println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+                    #println(file, "Surrounding HIC setpoint down step__________________", "\n")
+                    #println(file, "damping of surround setpoint: ", stability["damping"])
+                    #println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+                    #println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
             
                     # get setpoint
                     OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
@@ -824,7 +829,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                 epsilon = alpha[4] 
                 
                 ############ check to which side the step should be taken
-                println(file, "In HIC DW number: $DW_HIC __________________", "\n")
+                #println(file, "In HIC DW number: $DW_HIC __________________", "\n")
                 max_grad = max_gradients(data_build, for_grad, back_grad)
                 mask = mask_gens_at_limits(data_build, max_grad)
                 max_grad[mask] .= 0 #  don't consider generators at limit
@@ -839,10 +844,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                 new_SP = get_SetPoint(data_build) # get new generator setpoints
 
                 # some print statements to check directed walks
-                println(file, "these are the gradients: ", join(max_grad), ", ") # write the current generator setpoints to file
-                println(file, "this is the epsilon: ", join(epsilon), ", ") # write the current generator setpoints to file
-                println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
-                println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
+                #println(file, "these are the gradients: ", join(max_grad), ", ") # write the current generator setpoints to file
+                #println(file, "this is the epsilon: ", join(epsilon), ", ") # write the current generator setpoints to file
+                #println(file, "current generator setpoints: ", join(collect(values(sP)), ", ")) # write the current generator setpoints to file
+                #println(file, "updated generator setpoints: ", join(collect(values(new_SP)), ", ")) # write the updated generator setpoints to file
             
                 # check small signal stability of perturbered generator and obtain stability indices
                 sys_studied = create_system(data_build)
@@ -851,8 +856,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                 stability = small_signal_module(sys_studied)
 
                 # some print statements to check directed walks
-                println(file, "damping of new setpoint: ", stability["damping"])
-                println(file, "distance of new setpoint: ", stability["distance"])
+                #println(file, "damping of new setpoint: ", stability["damping"])
+                #println(file, "distance of new setpoint: ", stability["distance"])
     
                 push!(plot_damping, stability["damping"])
                 push!(plot_dist, stability["distance"])
@@ -890,7 +895,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
 
     end
         
-    close(file)
+    #close(file)
     GC.gc()
 
     return directed_walk_ops, directed_walk_stability
@@ -945,10 +950,15 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
         # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
         op_flag = Dict(
             "N0" => 1, # flag for base-case feasibility
+            "N0P" => 0.0, # active power violation
+            "N0Q" => 0.0, # active power violation
+            "N0OV" => 0.0, # amount over voltage violation
+            "N0UV" => 0.0, # amount under voltage violation
+            "N0L" => 0.0, # amount line flow violation
             "N1" => 1, # flag for N1 feasibility
-            "N1_over_volt" => 0.0, # amount over voltage violation
-            "N1_under_volt" => 0.0, # amount under voltage violation
-            "N1_flow" => 0.0 # amount flow violation
+            "N1OV" => 0.0, # amount over voltage violation
+            "N1UV" => 0.0, # amount under voltage violation
+            "N1L" => 0.0 # amount line flow violation
         )
 
         # construct SCOPF in form of multi network formulation
@@ -983,6 +993,11 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # initial_feasibility != true
                 if initial_feasibility != true 
                     op_flag["N0"] = 0
+                    op_flag["N0P"] += pg_vio
+                    op_flag["N0Q"] += qg_vio
+                    op_flag["N0OV"] += vm_vio_over
+                    op_flag["N0UV"] += vm_vio_under
+                    op_flag["N0L"] += sm_vio
                 end
             end
 
@@ -990,9 +1005,9 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # initial_feasibility != true
                 if initial_feasibility != true 
                     op_flag["N1"] = 0
-                    op_flag["N1_over_volt"] += vm_vio_over
-                    op_flag["N1_under_volt"] += vm_vio_under
-                    op_flag["N1_flow"] += sm_vio
+                    op_flag["N1OV"] += vm_vio_over
+                    op_flag["N1UV"] += vm_vio_under
+                    op_flag["N1L"] += sm_vio
                 end
             end
 

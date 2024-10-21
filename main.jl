@@ -118,7 +118,7 @@ if Initialize.directed_walks == true
     alpha = Initialize.alpha  # Step size
 
     # Determine minimal distance between OPs
-    R_min = minimum(alpha) * min_pmax * 0.5
+    R_min = 0.1 # minimum(alpha) * min_pmax * 0.5
 
     # Get feasible and stable ops with spacing R from each other
     cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)

@@ -332,10 +332,15 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
             # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
             op_flag = Dict(
                 "N0" => 1, # flag for base-case feasibility
+                "N0P" => 0.0, # active power violation
+                "N0Q" => 0.0, # active power violation
+                "N0OV" => 0.0, # amount over voltage violation
+                "N0UV" => 0.0, # amount under voltage violation
+                "N0L" => 0.0, # amount line flow violation
                 "N1" => 1, # flag for N1 feasibility
-                "N1_over_volt" => 0.0, # amount over voltage violation
-                "N1_under_volt" => 0.0, # amount under voltage violation
-                "N1_flow" => 0.0 # amount flow violation
+                "N1OV" => 0.0, # amount over voltage violation
+                "N1UV" => 0.0, # amount under voltage violation
+                "N1L" => 0.0 # amount line flow violation
             )
 
             # construct SCOPF in form of multi network formulation
@@ -371,6 +376,11 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                     if initial_feasibility != true    
                         op_flag["N0"] = 0
+                        op_flag["N0P"] += pg_vio
+                        op_flag["N0Q"] += qg_vio
+                        op_flag["N0OV"] += vm_vio_over
+                        op_flag["N0UV"] += vm_vio_under
+                        op_flag["N0L"] += sm_vio
                     end
                 end
 
@@ -378,9 +388,9 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                     if initial_feasibility != true
                         op_flag["N1"] = 0
-                        op_flag["N1_over_volt"] += vm_vio_over
-                        op_flag["N1_under_volt"] += vm_vio_under
-                        op_flag["N1_flow"] += sm_vio
+                        op_flag["N1OV"] += vm_vio_over
+                        op_flag["N1UV"] += vm_vio_under
+                        op_flag["N1L"] += sm_vio
                     end
                 end
 
@@ -406,10 +416,15 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                 # op placeholder
                 op_flag = Dict(
                     "N0" => 1, # flag for base-case feasibility
+                    "N0P" => 0.0, # active power violation
+                    "N0Q" => 0.0, # active power violation
+                    "N0OV" => 0.0, # amount over voltage violation
+                    "N0UV" => 0.0, # amount under voltage violation
+                    "N0L" => 0.0, # amount line flow violation
                     "N1" => 1, # flag for N1 feasibility
-                    "N1_over_volt" => 0.0, # amount over voltage violation
-                    "N1_under_volt" => 0.0, # amount under voltage violation
-                    "N1_flow" => 0.0 # amount flow violation
+                    "N1OV" => 0.0, # amount over voltage violation
+                    "N1UV" => 0.0, # amount under voltage violation
+                    "N1L" => 0.0 # amount line flow violation
                 )
 
                 # solve pvpq
@@ -431,6 +446,11 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                         # if PF_res1["termination_status"] != LOCALLY_SOLVED  || PF_res1["primal_status"] != FEASIBLE_POINT || PF_res1["dual_status"] != FEASIBLE_POINT # PF_res1["termination_status"] == LOCALLY_SOLVED != true && PVPQ_feasibility != true
                         if PVPQ_feasibility != true
                             op_flag["N0"] = 0
+                            op_flag["N0P"] += pg_vio
+                            op_flag["N0Q"] += qg_vio
+                            op_flag["N0OV"] += vm_vio_over
+                            op_flag["N0UV"] += vm_vio_under
+                            op_flag["N0L"] += sm_vio
                         end
                     end
     
@@ -438,9 +458,9 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                         # if PF_res1["termination_status"] != LOCALLY_SOLVED  || PF_res1["primal_status"] != FEASIBLE_POINT || PF_res1["dual_status"] != FEASIBLE_POINT # PF_res1["termination_status"] == LOCALLY_SOLVED != true && PVPQ_feasibility != true
                         if PVPQ_feasibility != true
                             op_flag["N1"] = 0
-                            op_flag["N1_over_volt"] += vm_vio_over
-                            op_flag["N1_under_volt"] += vm_vio_under
-                            op_flag["N1_flow"] += sm_vio
+                            op_flag["N1OV"] += vm_vio_over
+                            op_flag["N1UV"] += vm_vio_under
+                            op_flag["N1L"] += sm_vio
                         end
                     end
                 end
@@ -505,11 +525,17 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     # op placeholder
                     op_flag = Dict(
                         "N0" => 1, # flag for base-case feasibility
+                        "N0P" => 0.0, # active power violation
+                        "N0Q" => 0.0, # active power violation
+                        "N0OV" => 0.0, # amount over voltage violation
+                        "N0UV" => 0.0, # amount under voltage violation
+                        "N0L" => 0.0, # amount line flow violation
                         "N1" => 1, # flag for N1 feasibility
-                        "N1_over_volt" => 0.0, # amount over voltage violation
-                        "N1_under_volt" => 0.0, # amount under voltage violation
-                        "N1_flow" => 0.0 # amount flow violation
+                        "N1OV" => 0.0, # amount over voltage violation
+                        "N1UV" => 0.0, # amount under voltage violation
+                        "N1L" => 0.0 # amount line flow violation
                     )
+
 
                     for i in 0:(length(multinetwork["nw"])-1)
                         acpfcorrect_feasibility, pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio = check_ac_feasibility(data_tight_tmp, PF_res2["solution"]["nw"]["$i"], tollerance)
@@ -519,15 +545,20 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                         if i == 0
                             if acpfcorrect_feasibility != true # || PF_res2["termination_status"] == LOCALLY_SOLVED == true  
                                 op_flag["N0"] = 0
+                                op_flag["N0P"] += pg_vio
+                                op_flag["N0Q"] += qg_vio
+                                op_flag["N0OV"] += vm_vio_over
+                                op_flag["N0UV"] += vm_vio_under
+                                op_flag["N0L"] += sm_vio
                             end
                         end
         
                         if i != 0
                             if acpfcorrect_feasibility != true # || PF_res2["termination_status"] == LOCALLY_SOLVED != true  
                                 op_flag["N1"] = 0
-                                op_flag["N1_over_volt"] += vm_vio_over
-                                op_flag["N1_under_volt"] += vm_vio_under
-                                op_flag["N1_flow"] += sm_vio
+                                op_flag["N1OV"] += vm_vio_over
+                                op_flag["N1UV"] += vm_vio_under
+                                op_flag["N1L"] += sm_vio
                             end
                         end
                     end
@@ -642,10 +673,15 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
             # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
             op_flag = Dict(
                 "N0" => 1, # flag for base-case feasibility
+                "N0P" => 0.0, # active power violation
+                "N0Q" => 0.0, # active power violation
+                "N0OV" => 0.0, # amount over voltage violation
+                "N0UV" => 0.0, # amount under voltage violation
+                "N0L" => 0.0, # amount line flow violation
                 "N1" => 1, # flag for N1 feasibility
-                "N1_over_volt" => 0.0, # amount over voltage violation
-                "N1_under_volt" => 0.0, # amount under voltage violation
-                "N1_flow" => 0.0 # amount flow violation
+                "N1OV" => 0.0, # amount over voltage violation
+                "N1UV" => 0.0, # amount under voltage violation
+                "N1L" => 0.0 # amount line flow violation
             )
 
             # construct SCOPF in form of multi network formulation
@@ -679,6 +715,11 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                     # if PF_res0["termination_status"] != LOCALLY_SOLVED  && PF_res0["primal_status"] != FEASIBLE_POINT && PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                     if initial_feasibility != true
                         op_flag["N0"] = 0
+                        op_flag["N0P"] += pg_vio
+                        op_flag["N0Q"] += qg_vio
+                        op_flag["N0OV"] += vm_vio_over
+                        op_flag["N0UV"] += vm_vio_under
+                        op_flag["N0L"] += sm_vio
                     end
                 end
 
@@ -686,9 +727,9 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                     # if PF_res0["termination_status"] != LOCALLY_SOLVED  && PF_res0["primal_status"] != FEASIBLE_POINT && PF_res0["dual_status"] != FEASIBLE_POINT # PF_res0["termination_status"] == LOCALLY_SOLVED != true && initial_feasibility != true
                     if initial_feasibility != true
                         op_flag["N1"] = 0
-                        op_flag["N1_over_volt"] += vm_vio_over
-                        op_flag["N1_under_volt"] += vm_vio_under
-                        op_flag["N1_flow"] += sm_vio
+                        op_flag["N1OV"] += vm_vio_over
+                        op_flag["N1UV"] += vm_vio_under
+                        op_flag["N1L"] += sm_vio
                     end
                 end
 
@@ -719,12 +760,16 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                 # op placeholder
                 op_flag = Dict(
                     "N0" => 1, # flag for base-case feasibility
+                    "N0P" => 0.0, # active power violation
+                    "N0Q" => 0.0, # active power violation
+                    "N0OV" => 0.0, # amount over voltage violation
+                    "N0UV" => 0.0, # amount under voltage violation
+                    "N0L" => 0.0, # amount line flow violation
                     "N1" => 1, # flag for N1 feasibility
-                    "N1_over_volt" => 0.0, # amount over voltage violation
-                    "N1_under_volt" => 0.0, # amount under voltage violation
-                    "N1_flow" => 0.0 # amount flow violation
+                    "N1OV" => 0.0, # amount over voltage violation
+                    "N1UV" => 0.0, # amount under voltage violation
+                    "N1L" => 0.0 # amount line flow violation
                 )
-
 
                 for i in 0:(length(multinetwork["nw"])-1)
                     PF_res1 = adjust_PVPQ(multinetwork["nw"]["$i"], 4)
@@ -738,6 +783,11 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                         # if PF_res1["termination_status"] != LOCALLY_SOLVED  || PF_res1["primal_status"] != FEASIBLE_POINT || PF_res1["dual_status"] != FEASIBLE_POINT # PF_res1["termination_status"] == LOCALLY_SOLVED != true && PVPQ_feasibility != true
                         if PVPQ_feasibility != true
                             op_flag["N0"] = 0
+                            op_flag["N0P"] += pg_vio
+                            op_flag["N0Q"] += qg_vio
+                            op_flag["N0OV"] += vm_vio_over
+                            op_flag["N0UV"] += vm_vio_under
+                            op_flag["N0L"] += sm_vio
                         end
                     end
     
@@ -745,9 +795,9 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                         #if PF_res1["termination_status"] != LOCALLY_SOLVED  || PF_res1["primal_status"] != FEASIBLE_POINT || PF_res1["dual_status"] != FEASIBLE_POINT # PF_res1["termination_status"] == LOCALLY_SOLVED != true && PVPQ_feasibility != true
                         if PVPQ_feasibility != true
                             op_flag["N1"] = 0
-                            op_flag["N1_over_volt"] += vm_vio_over
-                            op_flag["N1_under_volt"] += vm_vio_under
-                            op_flag["N1_flow"] += sm_vio
+                            op_flag["N1OV"] += vm_vio_over
+                            op_flag["N1UV"] += vm_vio_under
+                            op_flag["N1L"] += sm_vio
                         end
                     end
                 end
@@ -811,10 +861,15 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                     # op placeholder
                     op_flag = Dict(
                         "N0" => 1, # flag for base-case feasibility
+                        "N0P" => 0.0, # active power violation
+                        "N0Q" => 0.0, # active power violation
+                        "N0OV" => 0.0, # amount over voltage violation
+                        "N0UV" => 0.0, # amount under voltage violation
+                        "N0L" => 0.0, # amount line flow violation
                         "N1" => 1, # flag for N1 feasibility
-                        "N1_over_volt" => 0.0, # amount over voltage violation
-                        "N1_under_volt" => 0.0, # amount under voltage violation
-                        "N1_flow" => 0.0 # amount flow violation
+                        "N1OV" => 0.0, # amount over voltage violation
+                        "N1UV" => 0.0, # amount under voltage violation
+                        "N1L" => 0.0 # amount line flow violation
                     )
 
                     for i in 0:(length(multinetwork["nw"])-1)
@@ -823,15 +878,20 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                         if i == 0
                             if acpfcorrect_feasibility != true #|| PF_res2["termination_status"] == LOCALLY_SOLVED != true  
                                 op_flag["N0"] = 0
+                                op_flag["N0P"] += pg_vio
+                                op_flag["N0Q"] += qg_vio
+                                op_flag["N0OV"] += vm_vio_over
+                                op_flag["N0UV"] += vm_vio_under
+                                op_flag["N0L"] += sm_vio
                             end
                         end
         
                         if i != 0
                             if acpfcorrect_feasibility != true #|| PF_res2["termination_status"] == LOCALLY_SOLVED != true  
                                 op_flag["N1"] = 0
-                                op_flag["N1_over_volt"] += vm_vio_over
-                                op_flag["N1_under_volt"] += vm_vio_under
-                                op_flag["N1_flow"] += sm_vio
+                                op_flag["N1OV"] += vm_vio_over
+                                op_flag["N1UV"] += vm_vio_under
+                                op_flag["N1L"] += sm_vio
                             end
                         end
                     end
