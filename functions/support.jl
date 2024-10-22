@@ -363,8 +363,8 @@ function check_vm_violations(network, solution, tollerance; vm_digits = 6)
 
             end
         end
-        vm_vio_over = vm_vio_over/nb_vm
-        vm_vio_under = vm_vio_under/nb_vm
+        vm_vio_over = vm_vio_over#/nb_vm
+        vm_vio_under = vm_vio_under#/nb_vm
         return vm_vio_over, vm_vio_under 
 end
 
@@ -392,8 +392,8 @@ function check_vm_violations_mn(network, solution, nw, tollerance; vm_digits = 6
 
             end
         end
-        vm_vio_over = vm_vio_over/nb_vm
-        vm_vio_under = vm_vio_under/nb_vm
+        vm_vio_over = vm_vio_over#/nb_vm
+        vm_vio_under = vm_vio_under#/nb_vm
         return vm_vio_over, vm_vio_under 
 end
 
@@ -463,8 +463,8 @@ function check_pg_pq_violations(network, solution, tollerance)
             end
         end
     end
-    pg_vio = pg_vio/nb_gen
-    qg_vio = qg_vio/nb_gen
+    pg_vio = pg_vio#/nb_gen
+    qg_vio = qg_vio#/nb_gen
     return pg_vio, qg_vio
 
 end
@@ -501,8 +501,8 @@ function check_pg_pq_violations_mn(network, solution, nw, tollerance)
             end
         end
     end
-    pg_vio = pg_vio/nb_gen
-    qg_vio = qg_vio/nb_gen
+    pg_vio = pg_vio#/nb_gen
+    qg_vio = qg_vio#/nb_gen
     return pg_vio, qg_vio
 
 end
@@ -532,10 +532,10 @@ function check_flow_violations(network, solution, tollerance)
                 rating = branch["rate_a"]
 
                 if s_fr > rating + tollerance
-                    sm_vio += ((s_fr - rating)/rating)*100
+                    sm_vio += abs(s_fr - rating) #((s_fr - rating)/rating)*100
                 end
                 if s_to > rating + tollerance
-                    sm_vio += ((s_to - rating)/rating)*100
+                    sm_vio += abs(s_to - rating) #((s_to - rating)/rating)*100
                 end
             end
         end
@@ -545,7 +545,7 @@ function check_flow_violations(network, solution, tollerance)
 
     end
 
-    sm_vio = sm_vio/nb_branch
+    sm_vio = sm_vio#/nb_branch
 
     return sm_vio
 end
@@ -570,16 +570,16 @@ function check_flow_violations_mn(network, solution, nw, tollerance)
                 rating = branch["rate_a"]
 
                 if s_fr > rating + tollerance
-                    sm_vio += ((s_fr - rating)/rating)*100
+                    sm_vio += abs(s_fr - rating) #((s_fr - rating)/rating)*100
                 end
                 if s_to > rating + tollerance
-                    sm_vio += ((s_to - rating)/rating)*100
+                    sm_vio += abs(s_to - rating) #((s_to - rating)/rating)*100
                 end
             end
         end
     end
 
-    sm_vio = sm_vio/nb_branch
+    sm_vio = sm_vio#/nb_branch
 
     return sm_vio
 end

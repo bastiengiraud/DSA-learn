@@ -350,7 +350,7 @@ end_time = time()
 # Calculate elapsed time
 elapsed_time = end_time - start_time
 println("Elapsed time: ", elapsed_time, " seconds")
-df_macros_total(elapsed_time, 0, 0, 0, Initialize.directory, Initialize.lhc_macros)
+df_macros_total(elapsed_time, 0, 0, 0.0, Initialize.directory, Initialize.lhc_macros)
 
 # write dataframe to CSV
 df_DW = construct_df()

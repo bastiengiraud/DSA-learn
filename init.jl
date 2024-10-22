@@ -30,7 +30,7 @@ dataset_filename =          "$(case_number)bus_method_ops.csv"
 flows_filename =            "$(case_number)bus_method_flows.csv"
 pol_macros_filename =       "$(case_number)bus_method_macros_polytope.csv"
 mvnd_macros_filename =      "$(case_number)bus_method_macros_mvnd.csv"
-method_macros =             "$(case_number)9bus_method_macros_method.csv"
+method_macros =             "$(case_number)9bus_macros_method.csv"
 
 # LHC sampling initialization
 lhc_dataset_filename =      "$(case_number)bus_lhc_ops.csv"
@@ -55,7 +55,7 @@ push_load_pf(network_data) # add the powerfactor of the loads to the dataset
 
 # specify sampling methods
 sss_analysis =              true
-directed_walks =            true
+directed_walks =            false
 mvnd_sampling =             true
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 

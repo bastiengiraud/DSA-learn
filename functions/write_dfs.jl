@@ -141,7 +141,7 @@ function dfs_init(feasible_ops, infeasible_ops, op_info_feasible, op_info_infeas
     df_DW_i.N1L = N1L_infeas 
 
     df_DW_f.N1OV = N1OV_feas 
-    df_DW_i.N1OV_infeas = N1OV_infeas 
+    df_DW_i.N1OV = N1OV_infeas 
 
     df_DW_f.N1UV = N1UV_feas 
     df_DW_i.N1UV = N1UV_infeas 

@@ -54,7 +54,7 @@ include("functions/dynamics.jl")
 include("init.jl")
 using .Initialize
 
-clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
 # check if properly initialized
 check_initialization()
@@ -102,6 +102,8 @@ if Initialize.sss_analysis == true
     damp_pol_infeas, dist_pol_infeas, _ = result_sss_infeas
 end
 
+num_dws = 0
+elapsed_time_dws = 0.0
 
 if Initialize.directed_walks == true 
     # obtain smalles Pmax to determin minimal distance between OPs R
@@ -118,7 +120,7 @@ if Initialize.directed_walks == true
     alpha = Initialize.alpha  # Step size
 
     # Determine minimal distance between OPs
-    R_min = 0.1 # minimum(alpha) * min_pmax * 0.5
+    R_min = 0.2 # minimum(alpha) * min_pmax * 0.5
 
     # Get feasible and stable ops with spacing R from each other
     cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)

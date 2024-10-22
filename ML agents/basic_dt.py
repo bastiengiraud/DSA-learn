@@ -209,224 +209,253 @@ X_train_imp, X_test_imp, y_train_imp, y_test_imp, imp_index_train, imp_index_tes
 X_test_imp = X_test_imp[imp_index_test]
 y_test_imp = y_test_imp[imp_index_test]
 
-# Initialize the DecisionTreeClassifier with gini impurity and max depth of 5. clf = classifier
-clf_method = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42) # splitter='best' or 'random' , ccp_alpha=0.01 for tree pruning
-clf_lhc = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42)
-clf_imp = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42)
+# Clear the CSV file before starting the run (optional)
+if os.path.exists(file_path_result):
+    with open(file_path_result, 'w') as f:
+        f.write('')  # Write an empty string to clear the file
 
-# Perform 10-fold cross-validation and compute accuracy for each fold
-cv_scores_method = cross_val_score(clf_method, X_method, y_method, cv=10, scoring='accuracy')
-cv_scores_lhc = cross_val_score(clf_lhc, X_lhc, y_lhc, cv=10, scoring='accuracy')
-cv_scores_imp = cross_val_score(clf_imp, X_imp, y_imp, cv=10, scoring='accuracy')
+# iteratively reduce training set size
+reduce_train = 2
+initial_fraction = 1.0  # Start with the full dataset
+reduction_step = 0.5    # Reduce by this fraction in each iteration
 
-# # Output the results
-# print("Cross-validation scores:", cv_scores)
-# print("Mean cross-validation accuracy:", np.mean(cv_scores))
-# print("Standard deviation of cross-validation accuracy:", np.std(cv_scores))
-
-# Train the classifier on the full training set
-clf_method.fit(X_train_method, y_train_method) 
-clf_method.get_params()
-
-clf_lhc.fit(X_train_lhc, y_train_lhc) 
-clf_lhc.get_params()
-
-clf_imp.fit(X_train_imp, y_train_imp) 
-clf_imp.get_params()
-
-# Make predictions on the test sets
-y_pred_method = clf_method.predict(X_test_method)
-y_pred_method_lhc = clf_method.predict(X_test_lhc)
-y_pred_method_imp = clf_method.predict(X_test_imp)
-# y_prob_method = clf_method.predict_proba(X_test_method) # due to early stopping, there is a probability of being wrong. Not all leafs are pure. 
-
-y_pred_lhc = clf_lhc.predict(X_test_lhc)
-y_pred_lhc_method = clf_lhc.predict(X_test_method)
-y_pred_lhc_imp = clf_lhc.predict(X_test_imp)
-# y_prob_lhc = clf_lhc.predict_proba(X_test_lhc)
-
-y_pred_imp = clf_imp.predict(X_test_imp)
-y_pred_imp_method = clf_imp.predict(X_test_method)
-y_pred_imp_lhc = clf_imp.predict(X_test_lhc)
-# y_prob_imp = clf_imp.predict_proba(X_test_imp)
-
-# Evaluate the classifier accuracy
-accuracy_method = accuracy_score(y_test_method, y_pred_method)
-accuracy_method_lhc = accuracy_score(y_test_lhc, y_pred_method_lhc)
-accuracy_method_imp = accuracy_score(y_test_imp, y_pred_method_imp)
-print("Test accuracy train  method, test method:", accuracy_method)
-print("Test accuracy train  method, test lhc:", accuracy_method_lhc)
-print("Test accuracy train  method, test imp:", accuracy_method_imp)
-
-accuracy_lhc = accuracy_score(y_test_lhc, y_pred_lhc)
-accuracy_lhc_method = accuracy_score(y_test_method, y_pred_lhc_method)
-accuracy_lhc_imp = accuracy_score(y_test_imp, y_pred_lhc_imp)
-print("Test accuracy train lhc, test lhc:", accuracy_lhc)
-print("Test accuracy train lhc, test method:", accuracy_lhc_method)
-print("Test accuracy train lhc, test imp:", accuracy_lhc_imp)
-
-accuracy_imp = accuracy_score(y_test_imp, y_pred_imp)
-accuracy_imp_method = accuracy_score(y_test_method, y_pred_imp_method)
-accuracy_imp_lhc = accuracy_score(y_test_lhc, y_pred_imp_lhc)
-print("Test accuracy train imp, test imp:", accuracy_imp)
-print("Test accuracy train imp, test method:", accuracy_imp_method)
-print("Test accuracy train imp, test lhc:", accuracy_imp_lhc)
-
-
-# Evaluate the classifier precision
-precision_method = precision_score(y_test_method, y_pred_method)
-precision_method_lhc = precision_score(y_test_lhc, y_pred_method_lhc)
-precision_method_imp = precision_score(y_test_imp, y_pred_method_imp)
-print("Test precision train  method, test method:", precision_method)
-print("Test precision train  method, test lhc:", precision_method_lhc)
-print("Test precision train  method, test imp:", precision_method_imp)
-
-precision_lhc = precision_score(y_test_lhc, y_pred_lhc)
-precision_lhc_method = precision_score(y_test_method, y_pred_lhc_method)
-precision_lhc_imp = precision_score(y_test_imp, y_pred_lhc_imp)
-print("Test precision train lhc, test lhc:", precision_lhc)
-print("Test precision train lhc, test method:", precision_lhc_method)
-print("Test precision train lhc, test imp:", precision_lhc_imp)
-
-precision_imp = precision_score(y_test_imp, y_pred_imp)
-precision_imp_method = precision_score(y_test_method, y_pred_imp_method)
-precision_imp_lhc = precision_score(y_test_lhc, y_pred_imp_lhc)
-print("Test precision train imp, test imp:", precision_imp)
-print("Test precision train imp, test method:", precision_imp_method)
-print("Test precision train imp, test lhc:", precision_imp_lhc)
-
-
-# Evaluate the classifier recall
-recall_method = recall_score(y_test_method, y_pred_method)
-recall_method_lhc = recall_score(y_test_lhc, y_pred_method_lhc)
-recall_method_imp = recall_score(y_test_imp, y_pred_method_imp)
-print("Test recall train  method, test method:", recall_method)
-print("Test recall train  method, test lhc:", recall_method_lhc)
-print("Test recall train  method, test imp:", recall_method_imp)
-
-recall_lhc = recall_score(y_test_lhc, y_pred_lhc)
-recall_lhc_method = recall_score(y_test_method, y_pred_lhc_method)
-recall_lhc_imp = recall_score(y_test_imp, y_pred_lhc_imp)
-print("Test recall train lhc, test lhc:", recall_lhc)
-print("Test recall train lhc, test method:", recall_lhc_method)
-print("Test recall train lhc, test imp:", recall_lhc_imp)
-
-recall_imp = recall_score(y_test_imp, y_pred_imp)
-recall_imp_method = recall_score(y_test_method, y_pred_imp_method)
-recall_imp_lhc = recall_score(y_test_lhc, y_pred_imp_lhc)
-print("Test recall train imp, test imp:", recall_imp)
-print("Test recall train imp, test method:", recall_imp_method)
-print("Test recall train imp, test lhc:", recall_imp_lhc)
-
-
-# Evaluate the classifier F1 score
-f1_method = f1_score(y_test_method, y_pred_method)
-f1_method_lhc = f1_score(y_test_lhc, y_pred_method_lhc)
-f1_method_imp = f1_score(y_test_imp, y_pred_method_imp)
-print("Test f1_score train  method, test method:", f1_method)
-print("Test f1_score train  method, test lhc:", f1_method_lhc)
-print("Test f1_score train  method, test imp:", f1_method_imp)
-
-f1_lhc = f1_score(y_test_lhc, y_pred_lhc)
-f1_lhc_method = f1_score(y_test_method, y_pred_lhc_method)
-f1_lhc_imp = f1_score(y_test_imp, y_pred_lhc_imp)
-print("Test f1_score train lhc, test lhc:", f1_lhc)
-print("Test f1_score train lhc, test method:", f1_lhc_method)
-print("Test f1_score train lhc, test imp:", f1_lhc_imp)
-
-f1_imp = f1_score(y_test_imp, y_pred_imp)
-f1_imp_method = f1_score(y_test_method, y_pred_imp_method)
-f1_imp_lhc = f1_score(y_test_lhc, y_pred_imp_lhc)
-print("Test f1_score train imp, test imp:", f1_imp)
-print("Test f1_score train imp, test method:", f1_imp_method)
-print("Test f1_score train imp, test lhc:", f1_imp_lhc)
-
-
-# Evaluate the classifier false positive rate. det_curve = fpr, fnr, threshold
-fpr_method, FP_list_method, FN_list_method = fpr_score(y_test_method, y_pred_method)
-fpr_method_lhc, FP_list_method_lhc, FN_list_method_lhc = fpr_score(y_test_lhc, y_pred_method_lhc)
-fpr_method_imp, FP_list_method_imp, FN_list_method_imp = fpr_score(y_test_imp, y_pred_method_imp)
-print("Test fpr train  method, test method:", fpr_method)
-print("Test fpr train  method, test lhc:", fpr_method_lhc)
-print("Test fpr train  method, test imp:", fpr_method_imp)
-
-fpr_lhc, FP_list_lhc, FN_list_lhc = fpr_score(y_test_lhc, y_pred_lhc)
-fpr_lhc_method, FP_list_lhc_method, FN_list_lhc_method = fpr_score(y_test_method, y_pred_lhc_method)
-fpr_lhc_imp, FP_list_lhc_imp, FN_list_lhc_imp = fpr_score(y_test_imp, y_pred_lhc_imp)
-print("Test fpr train lhc, test lhc:", fpr_lhc)
-print("Test fpr train lhc, test method:", fpr_lhc_method)
-print("Test fpr train lhc, test imp:", fpr_lhc_imp)
-
-fpr_imp, FP_list_imp, FN_list_imp = fpr_score(y_test_imp, y_pred_imp)
-fpr_imp_method, FP_list_imp_method, FN_list_imp_method = fpr_score(y_test_method, y_pred_imp_method)
-fpr_imp_lhc, FP_list_imp_lhc, FN_list_imp_lhc = fpr_score(y_test_lhc, y_pred_imp_lhc)
-print("Test fpr train imp, test imp:", fpr_imp)
-print("Test fpr train imp, test method:", fpr_imp_method)
-print("Test fpr train imp, test lhc:", fpr_imp_lhc)
-
-# Determine feature importance
-feature_names_method = X_method.columns
-feature_importance_method = clf_method.feature_importances_ # importance of each feature w.r.t. prediction
-
-feature_names_lhc = X_lhc.columns
-feature_importance_lhc = clf_lhc.feature_importances_
-
-feature_names_imp = X_imp.columns
-feature_importance_imp = clf_imp.feature_importances_
-
-# Create a DataFrame to store the feature importance values
-importance_df_method = pd.DataFrame({
-    'Feature': feature_names_method,
-    'Importance': feature_importance_method
-})
-
-importance_df_lhc = pd.DataFrame({
-    'Feature': feature_names_lhc,
-    'Importance': feature_importance_lhc
-})
-
-importance_df_imp = pd.DataFrame({
-    'Feature': feature_names_imp,
-    'Importance': feature_importance_imp
-})
-
-# Sort by importance (descending order)
-importance_df_method = importance_df_method.sort_values(by='Importance', ascending=False)
-importance_df_lhc = importance_df_lhc.sort_values(by='Importance', ascending=False)
-importance_df_imp = importance_df_imp.sort_values(by='Importance', ascending=False)
-
-# Select features with importance greater than 0
-features_method = list(importance_df_method[importance_df_method['Importance'] > 0]['Feature'])
-features_lhc = list(importance_df_lhc[importance_df_lhc['Importance'] > 0]['Feature'])
-features_imp = list(importance_df_imp[importance_df_imp['Importance'] > 0]['Feature'])
-
-
-data_result = {
-    'training data': ['method', 'lhc', 'importance'],
-    'method test accuracy': [accuracy_method, accuracy_lhc_method, accuracy_imp_method],
-    'lhc test accuracy': [accuracy_method_lhc, accuracy_lhc, accuracy_imp_lhc],
-    'imp test accuracy': [accuracy_method_imp, accuracy_lhc_imp, accuracy_imp],
-    'space': ['', '', ''],
-    'method test recall': [recall_method, recall_lhc_method, recall_imp_method],
-    'lhc test recall': [recall_method_lhc, recall_lhc, recall_imp_lhc],
-    'imp test recall': [recall_method_imp, recall_lhc_imp, recall_imp],
-    'space1': ['', '', ''],
-    'method test precision': [precision_method, precision_lhc_method, precision_imp_method],
-    'lhc test precision': [precision_method_lhc, precision_lhc, precision_imp_lhc],
-    'imp test precision': [precision_method_imp, precision_lhc_imp, precision_imp],
-    'space2': ['', '', ''],
-    'method test f1': [f1_method, f1_lhc_method, f1_imp_method],
-    'lhc test f1': [f1_method_lhc, f1_lhc, f1_imp_lhc],
-    'imp test f1': [f1_method_imp, f1_lhc_imp, f1_imp],
-    'space3': ['', '', ''],
-    'method test fpr': [fpr_method, fpr_lhc_method, fpr_imp_method],
-    'lhc test fpr': [fpr_method_lhc, fpr_lhc, fpr_imp_lhc],
-    'imp test fpr': [fpr_method_imp, fpr_lhc_imp, fpr_imp],
-
-}
+for i in range(reduce_train):
+    # Calculate the new fraction for the current iteration
+    current_fraction = initial_fraction - (i * reduction_step)
     
-df_result = pd.DataFrame.from_dict(data_result)
-df_result.to_csv(file_path_result, sep = ';')
+    # Ensure the fraction doesn't go below a certain limit
+    current_fraction = max(current_fraction, 0.1)  # Keep at least 10% of the data
+
+    # Randomly sample a subset of the training sets
+    X_train_method_subset = X_train_method.sample(frac=current_fraction, random_state=42)
+    y_train_method_subset = y_train_method.loc[X_train_method_subset.index]  # Ensure labels match
+    
+    X_train_lhc_subset = X_train_lhc.sample(frac=current_fraction, random_state=42)
+    y_train_lhc_subset = y_train_lhc.loc[X_train_lhc_subset.index]  # Ensure labels match
+    
+    X_train_imp_subset = X_train_imp.sample(frac=current_fraction, random_state=42)
+    y_train_imp_subset = y_train_imp.loc[X_train_imp_subset.index]  # Ensure labels match
+
+    # Initialize the DecisionTreeClassifier with gini impurity and max depth of 5. clf = classifier
+    clf_method = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42) # splitter='best' or 'random' , ccp_alpha=0.01 for tree pruning
+    clf_lhc = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42)
+    clf_imp = DecisionTreeClassifier(criterion='gini', max_depth=5, random_state=42)
+
+    # Perform 10-fold cross-validation and compute accuracy for each fold
+    cv_scores_method = cross_val_score(clf_method, X_method, y_method, cv=10, scoring='accuracy')
+    cv_scores_lhc = cross_val_score(clf_lhc, X_lhc, y_lhc, cv=10, scoring='accuracy')
+    cv_scores_imp = cross_val_score(clf_imp, X_imp, y_imp, cv=10, scoring='accuracy')
+
+    # # Output the results
+    # print("Cross-validation scores:", cv_scores)
+    # print("Mean cross-validation accuracy:", np.mean(cv_scores))
+    # print("Standard deviation of cross-validation accuracy:", np.std(cv_scores))
+
+    # Train the classifier on the reduced training sets
+    clf_method.fit(X_train_method_subset, y_train_method_subset)
+    clf_lhc.fit(X_train_lhc_subset, y_train_lhc_subset)
+    clf_imp.fit(X_train_imp_subset, y_train_imp_subset)
+
+    # Make predictions on the test sets
+    y_pred_method = clf_method.predict(X_test_method)
+    y_pred_method_lhc = clf_method.predict(X_test_lhc)
+    y_pred_method_imp = clf_method.predict(X_test_imp)
+    # y_prob_method = clf_method.predict_proba(X_test_method) # due to early stopping, there is a probability of being wrong. Not all leafs are pure. 
+
+    y_pred_lhc = clf_lhc.predict(X_test_lhc)
+    y_pred_lhc_method = clf_lhc.predict(X_test_method)
+    y_pred_lhc_imp = clf_lhc.predict(X_test_imp)
+    # y_prob_lhc = clf_lhc.predict_proba(X_test_lhc)
+
+    y_pred_imp = clf_imp.predict(X_test_imp)
+    y_pred_imp_method = clf_imp.predict(X_test_method)
+    y_pred_imp_lhc = clf_imp.predict(X_test_lhc)
+    # y_prob_imp = clf_imp.predict_proba(X_test_imp)
+
+    # Evaluate the classifier accuracy
+    accuracy_method = accuracy_score(y_test_method, y_pred_method)
+    accuracy_method_lhc = accuracy_score(y_test_lhc, y_pred_method_lhc)
+    accuracy_method_imp = accuracy_score(y_test_imp, y_pred_method_imp)
+    print("Test accuracy train  method, test method:", accuracy_method)
+    print("Test accuracy train  method, test lhc:", accuracy_method_lhc)
+    print("Test accuracy train  method, test imp:", accuracy_method_imp)
+
+    accuracy_lhc = accuracy_score(y_test_lhc, y_pred_lhc)
+    accuracy_lhc_method = accuracy_score(y_test_method, y_pred_lhc_method)
+    accuracy_lhc_imp = accuracy_score(y_test_imp, y_pred_lhc_imp)
+    print("Test accuracy train lhc, test lhc:", accuracy_lhc)
+    print("Test accuracy train lhc, test method:", accuracy_lhc_method)
+    print("Test accuracy train lhc, test imp:", accuracy_lhc_imp)
+
+    accuracy_imp = accuracy_score(y_test_imp, y_pred_imp)
+    accuracy_imp_method = accuracy_score(y_test_method, y_pred_imp_method)
+    accuracy_imp_lhc = accuracy_score(y_test_lhc, y_pred_imp_lhc)
+    print("Test accuracy train imp, test imp:", accuracy_imp)
+    print("Test accuracy train imp, test method:", accuracy_imp_method)
+    print("Test accuracy train imp, test lhc:", accuracy_imp_lhc)
+
+
+    # Evaluate the classifier precision
+    precision_method = precision_score(y_test_method, y_pred_method)
+    precision_method_lhc = precision_score(y_test_lhc, y_pred_method_lhc)
+    precision_method_imp = precision_score(y_test_imp, y_pred_method_imp)
+    print("Test precision train  method, test method:", precision_method)
+    print("Test precision train  method, test lhc:", precision_method_lhc)
+    print("Test precision train  method, test imp:", precision_method_imp)
+
+    precision_lhc = precision_score(y_test_lhc, y_pred_lhc)
+    precision_lhc_method = precision_score(y_test_method, y_pred_lhc_method)
+    precision_lhc_imp = precision_score(y_test_imp, y_pred_lhc_imp)
+    print("Test precision train lhc, test lhc:", precision_lhc)
+    print("Test precision train lhc, test method:", precision_lhc_method)
+    print("Test precision train lhc, test imp:", precision_lhc_imp)
+
+    precision_imp = precision_score(y_test_imp, y_pred_imp)
+    precision_imp_method = precision_score(y_test_method, y_pred_imp_method)
+    precision_imp_lhc = precision_score(y_test_lhc, y_pred_imp_lhc)
+    print("Test precision train imp, test imp:", precision_imp)
+    print("Test precision train imp, test method:", precision_imp_method)
+    print("Test precision train imp, test lhc:", precision_imp_lhc)
+
+
+    # Evaluate the classifier recall
+    recall_method = recall_score(y_test_method, y_pred_method)
+    recall_method_lhc = recall_score(y_test_lhc, y_pred_method_lhc)
+    recall_method_imp = recall_score(y_test_imp, y_pred_method_imp)
+    print("Test recall train  method, test method:", recall_method)
+    print("Test recall train  method, test lhc:", recall_method_lhc)
+    print("Test recall train  method, test imp:", recall_method_imp)
+
+    recall_lhc = recall_score(y_test_lhc, y_pred_lhc)
+    recall_lhc_method = recall_score(y_test_method, y_pred_lhc_method)
+    recall_lhc_imp = recall_score(y_test_imp, y_pred_lhc_imp)
+    print("Test recall train lhc, test lhc:", recall_lhc)
+    print("Test recall train lhc, test method:", recall_lhc_method)
+    print("Test recall train lhc, test imp:", recall_lhc_imp)
+
+    recall_imp = recall_score(y_test_imp, y_pred_imp)
+    recall_imp_method = recall_score(y_test_method, y_pred_imp_method)
+    recall_imp_lhc = recall_score(y_test_lhc, y_pred_imp_lhc)
+    print("Test recall train imp, test imp:", recall_imp)
+    print("Test recall train imp, test method:", recall_imp_method)
+    print("Test recall train imp, test lhc:", recall_imp_lhc)
+
+
+    # Evaluate the classifier F1 score
+    f1_method = f1_score(y_test_method, y_pred_method)
+    f1_method_lhc = f1_score(y_test_lhc, y_pred_method_lhc)
+    f1_method_imp = f1_score(y_test_imp, y_pred_method_imp)
+    print("Test f1_score train  method, test method:", f1_method)
+    print("Test f1_score train  method, test lhc:", f1_method_lhc)
+    print("Test f1_score train  method, test imp:", f1_method_imp)
+
+    f1_lhc = f1_score(y_test_lhc, y_pred_lhc)
+    f1_lhc_method = f1_score(y_test_method, y_pred_lhc_method)
+    f1_lhc_imp = f1_score(y_test_imp, y_pred_lhc_imp)
+    print("Test f1_score train lhc, test lhc:", f1_lhc)
+    print("Test f1_score train lhc, test method:", f1_lhc_method)
+    print("Test f1_score train lhc, test imp:", f1_lhc_imp)
+
+    f1_imp = f1_score(y_test_imp, y_pred_imp)
+    f1_imp_method = f1_score(y_test_method, y_pred_imp_method)
+    f1_imp_lhc = f1_score(y_test_lhc, y_pred_imp_lhc)
+    print("Test f1_score train imp, test imp:", f1_imp)
+    print("Test f1_score train imp, test method:", f1_imp_method)
+    print("Test f1_score train imp, test lhc:", f1_imp_lhc)
+
+
+    # Evaluate the classifier false positive rate. det_curve = fpr, fnr, threshold
+    fpr_method, FP_list_method, FN_list_method = fpr_score(y_test_method, y_pred_method)
+    fpr_method_lhc, FP_list_method_lhc, FN_list_method_lhc = fpr_score(y_test_lhc, y_pred_method_lhc)
+    fpr_method_imp, FP_list_method_imp, FN_list_method_imp = fpr_score(y_test_imp, y_pred_method_imp)
+    print("Test fpr train  method, test method:", fpr_method)
+    print("Test fpr train  method, test lhc:", fpr_method_lhc)
+    print("Test fpr train  method, test imp:", fpr_method_imp)
+
+    fpr_lhc, FP_list_lhc, FN_list_lhc = fpr_score(y_test_lhc, y_pred_lhc)
+    fpr_lhc_method, FP_list_lhc_method, FN_list_lhc_method = fpr_score(y_test_method, y_pred_lhc_method)
+    fpr_lhc_imp, FP_list_lhc_imp, FN_list_lhc_imp = fpr_score(y_test_imp, y_pred_lhc_imp)
+    print("Test fpr train lhc, test lhc:", fpr_lhc)
+    print("Test fpr train lhc, test method:", fpr_lhc_method)
+    print("Test fpr train lhc, test imp:", fpr_lhc_imp)
+
+    fpr_imp, FP_list_imp, FN_list_imp = fpr_score(y_test_imp, y_pred_imp)
+    fpr_imp_method, FP_list_imp_method, FN_list_imp_method = fpr_score(y_test_method, y_pred_imp_method)
+    fpr_imp_lhc, FP_list_imp_lhc, FN_list_imp_lhc = fpr_score(y_test_lhc, y_pred_imp_lhc)
+    print("Test fpr train imp, test imp:", fpr_imp)
+    print("Test fpr train imp, test method:", fpr_imp_method)
+    print("Test fpr train imp, test lhc:", fpr_imp_lhc)
+
+    # Determine feature importance
+    feature_names_method = X_method.columns
+    feature_importance_method = clf_method.feature_importances_ # importance of each feature w.r.t. prediction
+
+    feature_names_lhc = X_lhc.columns
+    feature_importance_lhc = clf_lhc.feature_importances_
+
+    feature_names_imp = X_imp.columns
+    feature_importance_imp = clf_imp.feature_importances_
+
+    # Create a DataFrame to store the feature importance values
+    importance_df_method = pd.DataFrame({
+        'Feature': feature_names_method,
+        'Importance': feature_importance_method
+    })
+
+    importance_df_lhc = pd.DataFrame({
+        'Feature': feature_names_lhc,
+        'Importance': feature_importance_lhc
+    })
+
+    importance_df_imp = pd.DataFrame({
+        'Feature': feature_names_imp,
+        'Importance': feature_importance_imp
+    })
+
+    # Sort by importance (descending order)
+    importance_df_method = importance_df_method.sort_values(by='Importance', ascending=False)
+    importance_df_lhc = importance_df_lhc.sort_values(by='Importance', ascending=False)
+    importance_df_imp = importance_df_imp.sort_values(by='Importance', ascending=False)
+
+    # Select features with importance greater than 0
+    features_method = list(importance_df_method[importance_df_method['Importance'] > 0]['Feature'])
+    features_lhc = list(importance_df_lhc[importance_df_lhc['Importance'] > 0]['Feature'])
+    features_imp = list(importance_df_imp[importance_df_imp['Importance'] > 0]['Feature'])
+
+
+    data_result = {
+        'training data': ['method', 'lhc', 'importance'],
+        'method test accuracy': [accuracy_method, accuracy_lhc_method, accuracy_imp_method],
+        'lhc test accuracy': [accuracy_method_lhc, accuracy_lhc, accuracy_imp_lhc],
+        'imp test accuracy': [accuracy_method_imp, accuracy_lhc_imp, accuracy_imp],
+        'space': ['', '', ''],
+        'method test recall': [recall_method, recall_lhc_method, recall_imp_method],
+        'lhc test recall': [recall_method_lhc, recall_lhc, recall_imp_lhc],
+        'imp test recall': [recall_method_imp, recall_lhc_imp, recall_imp],
+        'space1': ['', '', ''],
+        'method test precision': [precision_method, precision_lhc_method, precision_imp_method],
+        'lhc test precision': [precision_method_lhc, precision_lhc, precision_imp_lhc],
+        'imp test precision': [precision_method_imp, precision_lhc_imp, precision_imp],
+        'space2': ['', '', ''],
+        'method test f1': [f1_method, f1_lhc_method, f1_imp_method],
+        'lhc test f1': [f1_method_lhc, f1_lhc, f1_imp_lhc],
+        'imp test f1': [f1_method_imp, f1_lhc_imp, f1_imp],
+        'space3': ['', '', ''],
+        'method test fpr': [fpr_method, fpr_lhc_method, fpr_imp_method],
+        'lhc test fpr': [fpr_method_lhc, fpr_lhc, fpr_imp_lhc],
+        'imp test fpr': [fpr_method_imp, fpr_lhc_imp, fpr_imp],
+
+    }
+        
+    df_result = pd.DataFrame.from_dict(data_result)
+
+    # Append a newline before writing new results
+    with open(file_path_result, 'a') as f:
+        f.write('\n')  # Write a blank line before appending the new results
+        df_result.to_csv(f, sep=';', mode='a', header=f.tell() == 0, index=False)
+
+
+
 
 
 " determine distance to HIC region of missclassified points "
