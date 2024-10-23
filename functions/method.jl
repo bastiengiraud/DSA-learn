@@ -361,6 +361,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
             vm_vio_over = 0.0
             vm_vio_under = 0.0
             sm_vio = 0.0
+            pg_vio = 0.0
+            qg_vio = 0.0
 
             for i in 0:(length(multinetwork["nw"])-1)
                 # https://github.com/lanl-ansi/PowerModels.jl/blob/30e3d392fd95f1c5a81abd248ac3acc9462211b8/src/prob/pf.jl#L286-L292
@@ -433,6 +435,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                 vm_vio_over = 0.0
                 vm_vio_under = 0.0
                 sm_vio = 0.0
+                pg_vio = 0.0
+                qg_vio = 0.0
 
                 for i in 0:(length(multinetwork["nw"])-1)
                     PF_res1 = adjust_PVPQ(multinetwork["nw"]["$i"], 4)
@@ -521,6 +525,8 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     vm_vio_over = 0.0
                     vm_vio_under = 0.0
                     sm_vio = 0.0
+                    pg_vio = 0.0
+                    qg_vio = 0.0
 
                     # op placeholder
                     op_flag = Dict(
@@ -702,6 +708,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
             vm_vio_over = 0.0
             vm_vio_under = 0.0
             sm_vio = 0.0
+            pg_vio = 0.0
+            qg_vio = 0.0
 
             for i in 0:(length(multinetwork["nw"])-1)
                 PF_res0 = solve_ac_pf(multinetwork["nw"]["$i"], optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -756,6 +764,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                 vm_vio_over = 0.0
                 vm_vio_under = 0.0
                 sm_vio = 0.0
+                pg_vio = 0.0
+                qg_vio = 0.0
 
                 # op placeholder
                 op_flag = Dict(
@@ -857,6 +867,8 @@ function sample_mvnd(feasible_ops_polytope, data_tight_tmp, mvnd_samples, contin
                     vm_vio_over = 0.0
                     vm_vio_under = 0.0
                     sm_vio = 0.0
+                    pg_vio = 0.0
+                    qg_vio = 0.0
 
                     # op placeholder
                     op_flag = Dict(
@@ -1088,5 +1100,6 @@ function read_file_to_vectors(filename::String)
     end
     return vectors
 end
+
 
 

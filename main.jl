@@ -120,7 +120,7 @@ if Initialize.directed_walks == true
     alpha = Initialize.alpha  # Step size
 
     # Determine minimal distance between OPs
-    R_min = 0.2 # minimum(alpha) * min_pmax * 0.5
+    R_min = 0.0 # minimum(alpha) * min_pmax * 0.5
 
     # Get feasible and stable ops with spacing R from each other
     cls_op, closest_ops = remove_nearby_arrays(feasible_ops_polytope, damp_pol_feas, R_min)
@@ -132,7 +132,7 @@ if Initialize.directed_walks == true
         start_time_dws = time()
 
         # Add workers for distributed parallelism
-        addprocs(3)  # Adjust based on your needs
+        addprocs(1)  # Adjust based on your needs
         println("Total active workers: ", nworkers())
 
         # Activate the environment and instantiate packages
@@ -180,7 +180,7 @@ if Initialize.directed_walks == true
         # Perform directed walks in parallel using Distributed.@distributed
         print("I'm trying to do parallel computing.... fingers crossed!")
         results = @sync @distributed (vcat) for i in 1:num_dws ## TRY WITHOUT @SYNC! or with ASYNC
-            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
             (dw_ops, dw_stability)  # Return a tuple of results, the last line is collected by the @distributed macro. same as 'return'.
         end
 
@@ -191,6 +191,8 @@ if Initialize.directed_walks == true
         directed_walk_ops = vcat([result[1] for result in results]...)
         directed_walk_stability = vcat([result[2] for result in results]...)
 
+        # remove directed walk ops if they already exist in the current set of operating points
+        remove_duplicate_ops!(feasible_ops_polytope, infeasible_ops_polytope, directed_walk_ops, directed_walk_stability)
 
         end_time_dws = time()
         elapsed_time_dws = end_time_dws - start_time_dws
@@ -199,7 +201,11 @@ if Initialize.directed_walks == true
 
         # Perform directed walks
         start_time_dws = time()
-        directed_walk_ops, directed_walk_stability = DW_step(data_tight_tmp, feasible_ops_polytope, closest_ops, cls_op, Initialize.variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+        directed_walk_ops, directed_walk_stability = DW_step(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, closest_ops, cls_op, Initialize.variable_loads, pf_results_feas_polytope, distance, alpha, Initialize.dir_dynamics, Initialize.case_name)
+        
+        # remove directed walk ops if they already exist in the current set of operating points
+        remove_duplicate_ops!(feasible_ops_polytope, infeasible_ops_polytope, directed_walk_ops, directed_walk_stability)
+        
         end_time_dws = time()
         elapsed_time_dws = end_time_dws - start_time_dws
 
@@ -208,10 +214,9 @@ if Initialize.directed_walks == true
     println("Directed walks completed in $(elapsed_time_dws) seconds")
 
     # Check AC feasibility of operating points after directed walks
-    feasible_ops_dws, pf_results_feas_dws, op_info_feas_dws, infeasible_ops_dws, pf_results_infeas_dws, op_info_infeas_dws, nb_feasible_dws, nb_infeasible_dws, initial_feasible_dws, damp_dws_feas, damp_dws_infeas, dist_dws_feas, dist_dws_infeas = dw_ops_feasibility(Initialize.network_data, data_tight_tmp, Initialize.variable_loads, directed_walk_ops, directed_walk_stability)
+    feasible_ops_dws, pf_results_feas_dws, op_info_feas_dws, infeasible_ops_dws, pf_results_infeas_dws, op_info_infeas_dws, nb_feasible_dws, nb_infeasible_dws, initial_feasible_dws, damp_dws_feas, damp_dws_infeas, dist_dws_feas, dist_dws_infeas = dw_ops_feasibility(Initialize.network_data, data_tight_tmp, Initialize.variable_loads, directed_walk_ops, directed_walk_stability, Initialize.dir_dynamics, Initialize.case_name)
 
 end
-
 
 # Create a multivariate normal distribution and sample from this distribution
 if Initialize.mvnd_sampling == true
@@ -297,3 +302,4 @@ summary_result(Initialize.mvnd_sampling, Initialize.directed_walks)
 df_flow = construct_dt_data()
 output_path_dt_data = joinpath(Initialize.directory, Initialize.flows_filename)
 CSV.write(output_path_dt_data, df_flow; delim=';')  
+

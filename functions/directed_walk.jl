@@ -1,6 +1,7 @@
 include("support.jl")
 include("method.jl")
 include("contingency.jl")
+include("acpfcorrect.jl")
 
 # import initialization module
 init_dir = joinpath(dirname(@__DIR__), "init.jl")
@@ -242,6 +243,19 @@ function array_exists(arr_list, target_array, tol=1e-2) # tollerance is 0.01 pu 
     return false
 end
 
+function remove_duplicate_ops!(feasible_ops, infeasible_ops, dw_ops, dw_stability, tol=1e-2)
+    i = 1
+    while i <= length(dw_ops)
+        if array_exists(feasible_ops, dw_ops[i], tol) || array_exists(infeasible_ops, dw_ops[i], tol)
+            # Remove both the operating point and its corresponding stability value
+            splice!(dw_ops, i)
+            splice!(dw_stability, i)
+        else
+            i += 1
+        end
+    end
+end
+
 
 # Function to compute the Euclidean distance between two arrays
 function euclidean_distance(x::Vector, y::Vector)
@@ -250,7 +264,7 @@ end
 
 # Function to remove arrays that lie within a given radius R from each other
 function remove_nearby_arrays(arrays::Vector{Any}, damp_pol_feas::Vector{Any}, R::Float64)
-    # Step 1: Create a mask where damp_pol_feas >= 0 (i.e., valid points)
+    # Step 1: Create a mask where damp_pol_feas >= 0 (i.e., stable points)
     valid_mask = damp_pol_feas .>= 0
     
     # Step 2: Create a boolean mask to track which arrays should be kept, initialized to valid_mask
@@ -276,7 +290,7 @@ end
 
 
 
-function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
+function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, closest_ops, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
     dw_dir = joinpath(@__DIR__, "DW_file_try.txt")
     file = open(dw_dir, "w")
@@ -403,7 +417,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
             OP_tmp = get_Full_OP(data_tight, data_build, data_build) # use data_tight, then solution, then data_build
             
             # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-            if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+            if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
                 push!(directed_walk_ops, OP_tmp)
                 push!(directed_walk_stability, (stability["damping"], stability["distance"]))
             else
@@ -454,7 +468,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
                         OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
             
                         # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
                             push!(directed_walk_ops, OP_tmp)
                             push!(surrounding_ops, OP_tmp)
                             push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -485,7 +499,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
                         OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
             
                         # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
                             push!(directed_walk_ops, OP_tmp)
                             push!(surrounding_ops, OP_tmp)
                             push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -552,7 +566,7 @@ function DW_step(data_tight, feasible_ops_polytope, closest_ops, cls_op, variabl
 
                     # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
                     # do add if it's part of directed_walk_ops but also surrounding_ops
-                    if !array_exists(feasible_ops_polytope, OP_tmp) && 
+                    if !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp) && 
                         (!array_exists(directed_walk_ops, OP_tmp) || array_exists(surrounding_ops, OP_tmp))
                         push!(directed_walk_ops, OP_tmp)
                         push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -590,7 +604,7 @@ end
 
 
 
-function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
+function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
 
     #dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
     #file = open(dw_dir, "w")
@@ -712,7 +726,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
         OP_tmp = get_Full_OP(data_tight, data_build, data_build) # use data_tight, then solution, then data_build
         
         # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+        if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
             #push!(directed_walk_ops, OP_tmp)
             #push!(directed_walk_stability, (stability["damping"], stability["distance"]))
             print("Not adding OPs outside of HIC region.", "\n")
@@ -768,7 +782,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                     OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
         
                     # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-                    if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                    if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
                         push!(directed_walk_ops, OP_tmp)
                         push!(surrounding_ops, OP_tmp)
                         push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -799,7 +813,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
                     OP_tmp = get_Full_OP(data_tight, data_surround, data_surround) # use data_tight, then solution, then data_build
         
                     # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
-                    if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp)
+                    if !array_exists(directed_walk_ops, OP_tmp) && !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp)
                         push!(directed_walk_ops, OP_tmp)
                         push!(surrounding_ops, OP_tmp)
                         push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -866,7 +880,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, op_number, closest
 
                 # Push OP_tmp only if it doesn't exist in the list within the specified tolerance
                 # do add if it's part of directed_walk_ops but also surrounding_ops
-                if !array_exists(feasible_ops_polytope, OP_tmp) && 
+                if !array_exists(feasible_ops_polytope, OP_tmp) && !array_exists(infeasible_ops_polytope, OP_tmp) && 
                     (!array_exists(directed_walk_ops, OP_tmp) || array_exists(surrounding_ops, OP_tmp))
                     push!(directed_walk_ops, OP_tmp)
                     push!(directed_walk_stability, (stability["damping"], stability["distance"]))
@@ -904,7 +918,7 @@ end
 
 
 
-function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, directed_walk_ops, directed_walk_stability)
+function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, directed_walk_ops, directed_walk_stability, dir_dynamics, case_name)
 
     pm, N, vars, header = instantiate_system_QCRM(data_tight_tmp, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
@@ -979,6 +993,8 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
         vm_vio_over = 0.0
         vm_vio_under = 0.0
         sm_vio = 0.0
+        pg_vio = 0.0
+        qg_vio = 0.0
 
         for i in 0:(length(multinetwork["nw"])-1)
             PF_res0 = solve_ac_pf(multinetwork["nw"]["$i"], optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -1024,14 +1040,115 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
             println("initial status:", PF_res0["termination_status"] , "\n")
             print("initial feasibility: ", initial_feasibility, "\n")
         else 
-            # add infeasible initial sample
-            push!(pf_results_infeas, PF_res0["solution"])
-            push!(load_results_infeas, data_opf_verif)
-            push!(op_info_infeas, op_flag)
-            push!(op_info_infeas_stability, directed_walk_stability[counter])
-            nb_infeasible_dws += 1
-            println("initial status:", PF_res0["termination_status"] , "\n")
-            print("initial feasibility: ", initial_feasibility, "\n")
+
+            vars_new = []
+
+            pm = instantiate_model(multinetwork, ACPPowerModel, build_c1_scopf_load)
+
+            # get generator variables and add to vars
+            slack_gen_idx = get_slack_idx_mn(pm)
+            for i=1:length(pm.var[:it][:pm][:nw][0][:pg].data)
+                if i != slack_gen_idx && data_tight_tmp["gen"]["$i"]["pmax"] > 0.0
+                    push!(vars_new, JuMP.variable_by_name(pm.model, string("0_pg[",i,"]")))
+                end
+            end
+
+            # get voltage magnitude variables and add to vars
+            gen_indexes = unique(map(x -> x["gen_bus"], values(pm.data["nw"]["0"]["gen"])))
+            for g in gen_indexes
+                push!(vars_new, JuMP.variable_by_name(pm.model, string("0_vm[",g,"]")))
+            end
+
+            load_vars = collect(variable_loads)
+            for d in load_vars
+                push!(vars_new, JuMP.variable_by_name(pm.model, string("0_pd[",d,"]")))
+            end
+
+            x_hat = directed_walk_ops[counter]
+            N = length(vars_new)
+
+            # additional seperating hyperplanes constraints
+            @variable(pm.model, r); # r is the radius of the hypersphere from the sampled point to the relaxation
+            @variable(pm.model, aux_new[1:N]) # add auxiliary variable (x_opt)
+            @constraint(pm.model, aux_new .== vars_new) # constrain auxiliary variables
+            @constraint(pm.model, con_sphere, sqrt(sum((aux_new[i]-x_hat[i])^2 for i in 1:N)) <= r) # add constraint on radius
+
+            @objective(pm.model, Min, r); # the objective is to minimize r
+
+            # check ac correction feasibility
+            PF_res2 = optimize_model!(pm, optimizer=optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
+            acpfcorrect_feasibility = nothing
+            vm_vio_over = 0.0
+            vm_vio_under = 0.0
+            sm_vio = 0.0
+            pg_vio = 0.0
+            qg_vio = 0.0
+
+            # op placeholder
+            op_flag_correct = Dict(
+                "N0" => 1, # flag for base-case feasibility
+                "N0P" => 0.0, # active power violation
+                "N0Q" => 0.0, # active power violation
+                "N0OV" => 0.0, # amount over voltage violation
+                "N0UV" => 0.0, # amount under voltage violation
+                "N0L" => 0.0, # amount line flow violation
+                "N1" => 1, # flag for N1 feasibility
+                "N1OV" => 0.0, # amount over voltage violation
+                "N1UV" => 0.0, # amount under voltage violation
+                "N1L" => 0.0 # amount line flow violation
+            )
+
+
+            for i in 0:(length(multinetwork["nw"])-1)
+                acpfcorrect_feasibility, pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio = check_ac_feasibility(data_tight_tmp, PF_res2["solution"]["nw"]["$i"], tollerance)
+
+                if i == 0
+                    if acpfcorrect_feasibility != true # || PF_res2["termination_status"] == LOCALLY_SOLVED == true  
+                        op_flag_correct["N0"] = 0
+                        op_flag_correct["N0P"] += pg_vio
+                        op_flag_correct["N0Q"] += qg_vio
+                        op_flag_correct["N0OV"] += vm_vio_over
+                        op_flag_correct["N0UV"] += vm_vio_under
+                        op_flag_correct["N0L"] += sm_vio
+                    end
+                end
+
+                if i != 0
+                    if acpfcorrect_feasibility != true # || PF_res2["termination_status"] == LOCALLY_SOLVED != true  
+                        op_flag_correct["N1"] = 0
+                        op_flag_correct["N1OV"] += vm_vio_over
+                        op_flag_correct["N1UV"] += vm_vio_under
+                        op_flag_correct["N1L"] += sm_vio
+                    end
+                end
+            end
+
+            # check small signal stability of perturbered generator and obtain stability indices
+            sys_studied = create_system(data_opf_verif)
+            construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+            stability = small_signal_module(sys_studied)
+
+            if op_flag_correct["N0"] == 1 && op_flag_correct["N1"] == 1 && 0.0275 <= stability["damping"] <= 0.0325
+                # add feasible HIC sample
+                nb_feasible_dws += 1 
+                push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])
+                push!(load_results_feas, data_opf_verif)
+                push!(op_info_feas, op_flag_correct)
+                push!(op_info_feas_stability, (stability["damping"], stability["distance"]))
+                print("acpfcorrect feasibility: ", acpfcorrect_feasibility, "\n")
+                println("ACPF correct status:", PF_res2["termination_status"] , "\n")
+                print("corrected HIC point stability: ", stability["damping"], "\n")
+
+                # add infeasible HIC sample
+                push!(pf_results_infeas, PF_res0["solution"])
+                push!(load_results_infeas, data_opf_verif)
+                push!(op_info_infeas, op_flag)
+                push!(op_info_infeas_stability, directed_walk_stability[counter])
+                nb_infeasible_dws += 1
+                println("initial status:", PF_res0["termination_status"] , "\n")
+                print("initial feasibility: ", initial_feasibility, "\n")
+                print("original HIC point stability: ", directed_walk_stability[counter][1], "\n")
+            end
         end
     end
 
@@ -1064,6 +1181,179 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
 
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+# function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, directed_walk_ops, directed_walk_stability)
+
+#     pm, N, vars, header = instantiate_system_QCRM(data_tight_tmp, variable_loads)
+#     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
+
+#     pf_results_feas = []
+#     load_results_feas = []
+#     op_info_feas = []
+#     op_info_feas_stability = []
+
+#     pf_results_infeas = []
+#     load_results_infeas = []
+#     op_info_infeas = []
+#     op_info_infeas_stability = []
+    
+#     nb_feasible_dws = 0
+#     nb_infeasible_dws = 0
+#     initial_feasible_dws = 0
+#     tollerance = 1e-4
+
+#     # avoid modifying original data
+#     data_opf_verif = deepcopy(data_tight_tmp)
+
+#     for counter in 1:(length(directed_walk_ops[:])) 
+        
+#         for g in eachindex(pg_numbers)
+#             data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = directed_walk_ops[counter][g]
+#         end
+#         for v in eachindex(vm_numbers)
+#             data_opf_verif["bus"]["$(vm_numbers[v])"]["vm"] = directed_walk_ops[counter][length(pg_numbers)+v] 
+#         end
+#         for d in eachindex(pd_numbers)
+#             var_load_index = pd_numbers[d]
+#             data_opf_verif["load"]["$(pd_numbers[d])"]["pd"] = directed_walk_ops[counter][length(pg_numbers)+length(vm_numbers)+var_load_index] 
+#             pf = data_opf_verif["load"]["$(pd_numbers[d])"]["pf"]
+#             pd = data_opf_verif["load"]["$(pd_numbers[d])"]["pd"]
+#             sd = pd / pf
+#             qd = sqrt(sd^2 - pd^2)
+#             data_opf_verif["load"]["$(pd_numbers[d])"]["qd"] = qd
+#         end
+
+#         print("Current DW sample number: ", Int(counter), "\n")
+
+#         # dictionary placeholder with OP flags. 1 is feasible, 0 is infeasible
+#         op_flag = Dict(
+#             "N0" => 1, # flag for base-case feasibility
+#             "N0P" => 0.0, # active power violation
+#             "N0Q" => 0.0, # active power violation
+#             "N0OV" => 0.0, # amount over voltage violation
+#             "N0UV" => 0.0, # amount under voltage violation
+#             "N0L" => 0.0, # amount line flow violation
+#             "N1" => 1, # flag for N1 feasibility
+#             "N1OV" => 0.0, # amount over voltage violation
+#             "N1UV" => 0.0, # amount under voltage violation
+#             "N1L" => 0.0 # amount line flow violation
+#         )
+
+#         # construct SCOPF in form of multi network formulation
+#         multinetwork = build_c1_scopf_multinetwork_modif(data_opf_verif)
+#         # if length(multinetwork["nw"]) == 1
+#         #     op_flag["N1"] = 0
+#         # end
+
+#         if multinetwork["per_unit"] == true
+#             for (n, network) in multinetwork["nw"]
+#                 multinetwork["nw"]["$n"]["per_unit"] = true
+#             end
+#         end
+
+#         # check initial feasibility of base case and contingency cases
+#         PF_res0 = nothing
+#         initial_feasibility = nothing
+#         vm_vio_over = 0.0
+#         vm_vio_under = 0.0
+#         sm_vio = 0.0
+
+#         for i in 0:(length(multinetwork["nw"])-1)
+#             PF_res0 = solve_ac_pf(multinetwork["nw"]["$i"], optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
+#             update_data!(multinetwork["nw"]["$i"], PF_res0["solution"]) # update data with PF results
+#             flows0 = calc_branch_flow_ac(multinetwork["nw"]["$i"]) # compute branch flows
+#             update_data!(multinetwork["nw"]["$i"], flows0) # add branch flows
+#             update_data!(PF_res0["solution"], flows0) # add branch flows to solution
+#             initial_feasibility, pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio = check_ac_feasibility(data_tight_tmp, PF_res0["solution"], tollerance)
+
+#             print(pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio)
+#             if i == 0
+#                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # initial_feasibility != true
+#                 if initial_feasibility != true 
+#                     op_flag["N0"] = 0
+#                     op_flag["N0P"] += pg_vio
+#                     op_flag["N0Q"] += qg_vio
+#                     op_flag["N0OV"] += vm_vio_over
+#                     op_flag["N0UV"] += vm_vio_under
+#                     op_flag["N0L"] += sm_vio
+#                 end
+#             end
+
+#             if i != 0
+#                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # initial_feasibility != true
+#                 if initial_feasibility != true 
+#                     op_flag["N1"] = 0
+#                     op_flag["N1OV"] += vm_vio_over
+#                     op_flag["N1UV"] += vm_vio_under
+#                     op_flag["N1L"] += sm_vio
+#                 end
+#             end
+
+#         end                
+
+#         # check feasibility
+#         if op_flag["N0"] == 1 && op_flag["N1"] == 1
+#             nb_feasible_dws += 1
+#             initial_feasible_dws += 1
+#             push!(pf_results_feas, PF_res0["solution"])
+#             push!(load_results_feas, data_opf_verif)
+#             push!(op_info_feas, op_flag) 
+#             push!(op_info_feas_stability, directed_walk_stability[counter])
+#             println("initial status:", PF_res0["termination_status"] , "\n")
+#             print("initial feasibility: ", initial_feasibility, "\n")
+#         else 
+#             # add infeasible initial sample
+#             push!(pf_results_infeas, PF_res0["solution"])
+#             push!(load_results_infeas, data_opf_verif)
+#             push!(op_info_infeas, op_flag)
+#             push!(op_info_infeas_stability, directed_walk_stability[counter])
+#             nb_infeasible_dws += 1
+#             println("initial status:", PF_res0["termination_status"] , "\n")
+#             print("initial feasibility: ", initial_feasibility, "\n")
+#         end
+#     end
+
+#     print("number of feasible DW samples: ", nb_feasible_dws, "\n")
+
+#     # get list of feasible operating points x
+#     feasible_ops_dws = []
+#     damp_dws_feas = []
+#     dist_dws_feas = []
+#     for i in 1:length(pf_results_feas[:])
+#         op = get_Full_OP(data_tight_tmp, pf_results_feas[i], load_results_feas[i])
+#         push!(feasible_ops_dws, op)
+#         push!(damp_dws_feas, op_info_feas_stability[(i)][1])
+#         push!(dist_dws_feas, op_info_feas_stability[(i)][2])
+#     end
+
+#     # get list of infeasible operating points
+#     infeasible_ops_dws = []
+#     damp_dws_infeas = []
+#     dist_dws_infeas = []
+#     for i in 1:length(pf_results_infeas[:])
+#         op = get_Full_OP(data_tight_tmp, pf_results_infeas[i], load_results_infeas[i])
+#         push!(infeasible_ops_dws, op)
+#         push!(damp_dws_infeas, op_info_infeas_stability[(i)][1])
+#         push!(dist_dws_infeas, op_info_infeas_stability[(i)][2])
+#     end
+
+
+#     return feasible_ops_dws, pf_results_feas, op_info_feas, infeasible_ops_dws, pf_results_infeas, op_info_infeas, nb_feasible_dws, nb_infeasible_dws, initial_feasible_dws, damp_dws_feas, damp_dws_infeas, dist_dws_feas, dist_dws_infeas
+
+
+# end
+
 
 
 

@@ -1,4 +1,0 @@
-;method;number of samples;AC feasible samples;AC feasible percentage [%];stable samples;stable samples percentage [%];secure samples;secure samples percentage [%];samples in HIC region;samples in HIC region percentage [%]
-0;method;22688;12488;55.04231312;22674;99.93829337;12488;55.04231312;16091;70.92295487
-1;lhc;20000;10000;50;10437;46.00229196;9159;40.36935825;356;1.569111425
-2;importance;24984;12500;50.03202049;21498;94.75493653;11791;51.97020451;5178;22.82263752
