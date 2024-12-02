@@ -135,7 +135,8 @@ if Initialize.directed_walks == true
         start_time_dws = time()
 
         # Add workers for distributed parallelism
-        addprocs(1)  # Adjust based on your needs
+        num_procs = 2
+        addprocs(num_procs)  # Adjust based on your needs
         println("Total active workers: ", nworkers())
 
         # Activate the environment and instantiate packages
@@ -189,17 +190,51 @@ if Initialize.directed_walks == true
 
         # Perform directed walks in parallel using Distributed.@distributed
         print("I'm trying to do parallel computing.... fingers crossed!")
-        results = @sync @distributed (vcat) for i in 1:num_dws ## TRY WITHOUT @SYNC! or with ASYNC
-            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, machine_data_dict, k_max, k_max_HIC)
-            (dw_ops, dw_stability)  # Return a tuple of results, the last line is collected by the @distributed macro. same as 'return'.
+        # results = @sync @distributed (vcat) for i in 1:num_dws ## TRY WITHOUT @SYNC! or with ASYNC
+        #     dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, machine_data_dict, k_max, k_max_HIC)
+        #     (dw_ops, dw_stability)  # Return a tuple of results, the last line is collected by the @distributed macro. same as 'return'.
+        # end
+
+        all_results = []
+        batch_size = num_procs
+        for start_idx in 1:batch_size:num_dws
+            end_idx = min(start_idx + batch_size - 1, num_dws)
+            batch_results = @sync @distributed (vcat) for i in start_idx:end_idx
+                dw_ops, dw_stability = DW_step_single_op(
+                    data_tight_tmp, 
+                    feasible_ops_polytope, 
+                    infeasible_ops_polytope, 
+                    i, 
+                    closest_ops[i], 
+                    cls_op[i], 
+                    variable_loads, 
+                    pf_results_feas_polytope, 
+                    distance, 
+                    alpha, 
+                    stability_boundary, 
+                    stability_lower_bound, 
+                    stability_upper_bound, 
+                    machine_data_dict, 
+                    k_max, 
+                    k_max_HIC
+                )
+                (dw_ops, dw_stability)
+            end
+
+            append!(all_results, batch_results)
+
+            println("Cleaning temporary files after batch $start_idx-$end_idx...")
+            clean_temp_files()
+            GC.gc()
         end
+
 
         # remove workers and continue code on one core
         rmprocs(workers())
 
         # Extracting `dw_ops` and `dw_stability` using comprehension
-        directed_walk_ops = vcat([result[1] for result in results]...)
-        directed_walk_stability = vcat([result[2] for result in results]...)
+        directed_walk_ops = vcat([result[1] for result in all_results]...)
+        directed_walk_stability = vcat([result[2] for result in all_results]...)
         
         print("number of dw ops: ", length(directed_walk_ops), "\n")
 
