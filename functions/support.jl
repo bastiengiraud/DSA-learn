@@ -434,7 +434,7 @@ function check_pg_pq_violations(network, solution, tollerance)
 
             if gen_sol["pg"] < gen["pmin"] - tollerance
                 pg_vio += abs(gen["pmin"] - gen_sol["pg"])
-                print("violation at gen: ", i, " Pg is: ", gen_sol["pg"], "\n")
+                # print("violation at gen: ", i, " Pg is: ", gen_sol["pg"], "\n")
                 # if gen["pmax"] > 0
                 #     pg_vio += ((gen["pmin"] - gen_sol["pg"])/gen["pmax"])*100
                 # else
@@ -443,7 +443,7 @@ function check_pg_pq_violations(network, solution, tollerance)
             end
             if gen_sol["pg"] > gen["pmax"] + tollerance
                 pg_vio += abs(gen_sol["pg"] - gen["pmax"])
-                print("violation at gen: ", i, " Pg is: ", gen_sol["pg"], "\n")
+                # print("violation at gen: ", i, " Pg is: ", gen_sol["pg"], "\n")
                 # if gen["pmax"] > 0
                 #     pg_vio += ((gen_sol["pg"] - gen["pmax"])/gen["pmax"])*100
                 # else
@@ -454,12 +454,12 @@ function check_pg_pq_violations(network, solution, tollerance)
             if gen_sol["qg"] < gen["qmin"] - tollerance
                 qg_vio += (abs(gen["qmin"] - gen_sol["qg"]))
                 #qg_vio += (abs(gen["qmin"] - gen_sol["qg"])/gen["qmax"])*100
-                print("violation at gen: ", i, " Qg is: ", gen_sol["qg"], "\n")
+                # print("violation at gen: ", i, " Qg is: ", gen_sol["qg"], "\n")
             end
             if gen_sol["qg"] > gen["qmax"] + tollerance
                 qg_vio += (abs(gen_sol["qg"] - gen["qmax"]))
                 # qg_vio += ((gen_sol["qg"] - gen["qmax"])/gen["qmax"])*100
-                print("violation at gen: ", i, " Qg is: ", gen_sol["qg"], "\n")
+                # print("violation at gen: ", i, " Qg is: ", gen_sol["qg"], "\n")
             end
         end
     end
@@ -789,6 +789,35 @@ function check_initialization_imp()
         throw(ErrorException("The Importance sampling baseline doesn't do directed walks."))
     elseif Initialize.mvnd_sampling != true 
         throw(ErrorException("The Importance sampling baseline needs mvnd sampling."))
+    end
+end
+
+
+function clear_custom_temp_folder()
+    temp_folder = ENV["JULIA_TEMP"]
+    
+    # Check if the folder exists
+    if isdir(temp_folder)
+        # Remove all files in the folder
+        for file in readdir(temp_folder)
+            rm(joinpath(temp_folder, file), recursive=true)
+        end
+        println("Custom temp folder cleared.")
+    else
+        println("Custom temp folder does not exist.")
+    end
+end
+
+function clean_temp_files()
+    temp_directory = tempdir()  # Get the system's temporary directory
+    for file in readdir(temp_directory)  # List all files in the temp directory
+        if startswith(file, "jl_")  # Check if the file starts with 'jl_'
+            try
+                rm(joinpath(temp_directory, file))  # Remove the file
+            catch e
+                @warn "Could not remove file $file: $e"
+            end
+        end
     end
 end
 

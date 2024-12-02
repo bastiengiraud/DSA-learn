@@ -21,11 +21,12 @@ function dist_to_imaxis(eigenvalues)
     else -10^-8 < maximum(real_eigen) < 10^-8
         zero_real_indices = findall(real_eigen .== 0)
         zero_real_and_imag_indices = filter(i -> imag_eigen[i] == 0, zero_real_indices)
-        if isempty(zero_real_and_imag_indices)
-            println("Warning : 0 but stable")
-        else
-            println("Warning : there is an eigenvalue at the origin")
-        end
+        #### only print statement when OP is not small-signal stable
+        # if isempty(zero_real_and_imag_indices)
+        #     println("Warning : 0 but stable")
+        # else
+        #     println("Warning : there is an eigenvalue at the origin")
+        # end
         real_eigen = [eig_val for eig_val in real_eigen if eig_val <= -10^-8]
     end
 
@@ -101,6 +102,7 @@ function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_nu
     total_eigen = []
 
     data_build = deepcopy(data_tight_HP)
+    machine_data_dict = load_machine_data(dir_dynamics, case_name)
 
     for i in eachindex(global_OPs)   
         # data_build = deepcopy(data_tight_HP)
@@ -124,7 +126,7 @@ function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_nu
 
         syst = create_system(data_build) # builds up data in temp folder
         #add_dyn_system_basic(syst) 
-        construct_dynamic_model(syst, dir_dynamics, case_name) # builds up data in temp folder. Own function from dynamics.jl
+        construct_dynamic_model(syst, machine_data_dict) # builds up data in temp folder. Own function from dynamics.jl
         #add_dyn_injectors!(syst, dir_dynamics) # dyr_content = readlines(Initialize.dir_dynamics)
 
         stability = small_signal_module(syst)
@@ -132,7 +134,9 @@ function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_nu
         push!(total_dist, stability["distance"])
         push!(total_eigen, stability["eigenvalues"])
 
-        if i % 500 == 0 # clear temp folder after every 500 iterations
+        if i % 100 == 0 # clear temp folder after every 500 iterations
+            clean_temp_files()
+            GC.gc()
             #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
             continue
         end

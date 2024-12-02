@@ -546,7 +546,7 @@ function sample_polytope(network_data, data_tight_tmp, polytope_samples, variabl
                     for i in 0:(length(multinetwork["nw"])-1)
                         acpfcorrect_feasibility, pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio = check_ac_feasibility(data_tight_tmp, PF_res2["solution"]["nw"]["$i"], tollerance)
 
-                        print(pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio)
+                        # print(pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio)
 
                         if i == 0
                             if acpfcorrect_feasibility != true # || PF_res2["termination_status"] == LOCALLY_SOLVED == true  

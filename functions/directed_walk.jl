@@ -71,7 +71,7 @@ function ops_in_stability_boundary(arr, lower::Float64, upper::Float64)
 end
 
 
-function perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
+function perturbation_forward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
 
     damping_forward = []
     dist_forward = []
@@ -94,7 +94,7 @@ function perturbation_forward(data_build, dir_dynamics, case_name, current_dampi
             
             # construct system and add dynamic components
             sys_studied = create_system(data_build)
-            construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+            construct_dynamic_model(sys_studied, machine_data_dict)
 
             stability = small_signal_module(sys_studied) # check small signal stability of data with updated generator
             push!(damping_forward, stability["damping"]) 
@@ -118,7 +118,7 @@ function perturbation_forward(data_build, dir_dynamics, case_name, current_dampi
 end
 
 
-function perturbation_backward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
+function perturbation_backward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
 
     damping_backward = []
     dist_backward = []
@@ -141,7 +141,7 @@ function perturbation_backward(data_build, dir_dynamics, case_name, current_damp
             end
             
             sys_studied = create_system(data_build)
-            construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+            construct_dynamic_model(sys_studied, machine_data_dict)
 
             stability = small_signal_module(sys_studied) # perform small signal stability analysis with negatively perturbed generator
             push!(damping_backward, stability["damping"]) 
@@ -324,8 +324,17 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
     # avoid modifying original data
     data_build = deepcopy(data_tight)
 
+    # read the machine data from the csv files only once
+    machine_data_dict = load_machine_data(dir_dynamics, case_name)
+
     for i in closest_ops 
         # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+        if i % 500 == 0 # clear temp folder after every 500 iterations
+            clean_temp_files()
+            GC.gc()
+            #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+            continue
+        end
 
         # update steady state data with setpoint data
         update_data!(data_build, pf_results_prev[i])
@@ -342,7 +351,7 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
 
         # create system, add dynamic elements, perform SSA
         sys_studied = create_system(data_build) # this builds up temp folder
-        construct_dynamic_model(sys_studied, dir_dynamics, case_name) # this also builds up temp folder
+        construct_dynamic_model(sys_studied, machine_data_dict) # this also builds up temp folder
 
         stability = small_signal_module(sys_studied)
 
@@ -367,8 +376,8 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
             end
 
             # compute damping ratio with perturbed generator setpoints     
-            for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
-            back_grad, damping_backward, dist_backward = perturbation_backward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)           
+            for_grad, damping_forward, dist_forward = perturbation_forward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
+            back_grad, damping_backward, dist_backward = perturbation_backward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)           
 
             ############# compute step size #######
             dOP_k = abs(current_damping - stability_boundary)
@@ -401,7 +410,7 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
         
             # check small signal stability of perturbered generator and obtain stability indices
             sys_studied = create_system(data_build)
-            construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+            construct_dynamic_model(sys_studied, machine_data_dict)
 
             stability = small_signal_module(sys_studied)
 
@@ -454,7 +463,7 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
 
                         # check small signal stability of perturbered generator and obtain stability indices
                         sys_studied = create_system(data_surround)
-                        construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                        construct_dynamic_model(sys_studied, machine_data_dict)
                         stability = small_signal_module(sys_studied)
 
                         println(file, "Surrounding HIC setpoint up step __________________", "\n")
@@ -485,7 +494,7 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
 
                         # check small signal stability of perturbered generator and obtain stability indices
                         sys_studied = create_system(data_surround)
-                        construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                        construct_dynamic_model(sys_studied, machine_data_dict)
                         stability = small_signal_module(sys_studied)
 
                         println(file, "Surrounding HIC setpoint down step__________________", "\n")
@@ -520,8 +529,8 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
                     print("OP number: ", (index - 1),"/", length(closest_ops), ", HIC directed walk number: $DW_HIC __________________", "\n")
 
                     # compute damping ratio with perturbed generator setpoints     
-                    for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
-                    back_grad, damping_backward, dist_backward = perturbation_backward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)           
+                    for_grad, damping_forward, dist_forward = perturbation_forward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
+                    back_grad, damping_backward, dist_backward = perturbation_backward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)           
         
                     ############# take the smallest step size #######
                     epsilon = alpha[4] 
@@ -549,7 +558,7 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
                 
                     # check small signal stability of perturbered generator and obtain stability indices
                     sys_studied = create_system(data_build)
-                    construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                    construct_dynamic_model(sys_studied, machine_data_dict)
 
                     stability = small_signal_module(sys_studied)
 
@@ -602,7 +611,7 @@ end
 
 
 
-function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, dir_dynamics, case_name, k_max, k_max_HIC)
+function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, machine_data_dict, k_max, k_max_HIC)
 
     #dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
     #file = open(dw_dir, "w")
@@ -649,7 +658,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
 
     # create system, add dynamic elements, perform SSA
     sys_studied = create_system(data_build) # this builds up temp folder
-    construct_dynamic_model(sys_studied, dir_dynamics, case_name) # this also builds up temp folder
+    construct_dynamic_model(sys_studied, machine_data_dict) # this also builds up temp folder
 
     stability = small_signal_module(sys_studied)
 
@@ -674,8 +683,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
         end
 
         # compute damping ratio with perturbed generator setpoints     
-        for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
-        back_grad, damping_backward, dist_backward = perturbation_backward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)           
+        for_grad, damping_forward, dist_forward = perturbation_forward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
+        back_grad, damping_backward, dist_backward = perturbation_backward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)           
 
         ############# compute step size #######
         dOP_k = abs(current_damping - stability_boundary)
@@ -708,7 +717,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
     
         # check small signal stability of perturbered generator and obtain stability indices
         sys_studied = create_system(data_build)
-        construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+        construct_dynamic_model(sys_studied, machine_data_dict)
 
         stability = small_signal_module(sys_studied)
 
@@ -744,6 +753,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
             break
         end
 
+        # clear temp folder
+        clean_temp_files()
+        GC.gc()
+
         if (stability_lower_bound < current_damping) && 
             (current_damping < stability_upper_bound)
 
@@ -769,7 +782,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
 
                     # check small signal stability of perturbered generator and obtain stability indices
                     sys_studied = create_system(data_surround)
-                    construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                    construct_dynamic_model(sys_studied, machine_data_dict)
                     stability = small_signal_module(sys_studied)
 
                     #println(file, "Surrounding HIC setpoint up step __________________", "\n")
@@ -800,7 +813,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
 
                     # check small signal stability of perturbered generator and obtain stability indices
                     sys_studied = create_system(data_surround)
-                    construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                    construct_dynamic_model(sys_studied, machine_data_dict)
                     stability = small_signal_module(sys_studied)
 
                     #println(file, "Surrounding HIC setpoint down step__________________", "\n")
@@ -827,6 +840,10 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
                 end
             end
 
+            # clear temp folder
+            clean_temp_files()
+            GC.gc()
+
 
             ############ continue directed walks along a single dimension
             # get direction of steepest gradient descent along a single dimension
@@ -835,8 +852,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
                 print("OP number: ", op_number, ", HIC directed walk number: $DW_HIC ________", current_damping, "\n")
 
                 # compute damping ratio with perturbed generator setpoints     
-                for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
-                back_grad, damping_backward, dist_backward = perturbation_backward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)           
+                for_grad, damping_forward, dist_forward = perturbation_forward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)
+                back_grad, damping_backward, dist_backward = perturbation_backward(data_build, machine_data_dict, current_damping, perturbation, stability_boundary)           
     
                 ############# take the smallest step size #######
                 epsilon = alpha[4] 
@@ -864,7 +881,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
             
                 # check small signal stability of perturbered generator and obtain stability indices
                 sys_studied = create_system(data_build)
-                construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+                construct_dynamic_model(sys_studied, machine_data_dict)
 
                 stability = small_signal_module(sys_studied)
 
@@ -909,6 +926,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
     end
         
     #close(file)
+    clean_temp_files()
     GC.gc()
 
     return directed_walk_ops, directed_walk_stability
@@ -940,7 +958,16 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
     # avoid modifying original data
     data_opf_verif = deepcopy(data_tight_tmp)
 
+    # read the machine data from the csv files only once
+    machine_data_dict = load_machine_data(dir_dynamics, case_name)
+
     for counter in 1:(length(directed_walk_ops[:])) 
+        if counter % 100 == 0 # clear temp folder after every 500 iterations
+            clean_temp_files()
+            GC.gc()
+            #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+            continue
+        end
         
         for g in eachindex(pg_numbers)
             data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = directed_walk_ops[counter][g]
@@ -1124,7 +1151,7 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
 
             # check small signal stability of perturbered generator and obtain stability indices
             sys_studied = create_system(data_opf_verif)
-            construct_dynamic_model(sys_studied, dir_dynamics, case_name)
+            construct_dynamic_model(sys_studied, machine_data_dict)
             stability = small_signal_module(sys_studied)
 
             if op_flag_correct["N0"] == 1 && op_flag_correct["N1"] == 1 #&& 0.0275 <= stability["damping"] <= 0.0325

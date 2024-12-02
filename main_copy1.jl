@@ -1,26 +1,4 @@
-"""
 
-Next necessary steps:
-
-- Get DWs in parallel, for all initialization points?
-
-- do directed walks only for the most critical contingency when considering contingencies
-
-- make sure all OPs in the dataset are unique. Get discretization interval 
-
-- make sure all directionaries are only specified in init.jl. If you import .init somewhere, make sure to specify it
-in it to keep overview. Also, clean_temp_folder location could be in init. Also DW.txt file in init.
-
-- get another big case to work on (maybe 240 buses), besides 39 and 162
-
-
-Future work: 
-
-compare method against baselines for transient stability! 
-Maybe also voltage collapse; point where you can't solve opf anymore
-
-
-"""
 
 ##########################################################
 # This is the main file for the dataset creation toolbox.
@@ -120,6 +98,9 @@ num_dws = 0
 elapsed_time_dws = 0.0
 
 if Initialize.directed_walks == true 
+    # remove workers and continue code on one core
+    rmprocs(workers())
+
     # obtain smalles Pmax to determin minimal distance between OPs R
     min_pmax = 1000
     for i in 1:length(data_tight_tmp["gen"])
@@ -129,6 +110,9 @@ if Initialize.directed_walks == true
             min_pmax = pmax
         end
     end
+
+    # read the machine data from the csv files only once
+    machine_data_dict = load_machine_data(Initialize.dir_dynamics, Initialize.case_name)
 
     distance = Initialize.distance  # Distance determining step size
     alpha = Initialize.alpha  # Step size
@@ -151,7 +135,7 @@ if Initialize.directed_walks == true
         start_time_dws = time()
 
         # Add workers for distributed parallelism
-        addprocs(20)  # Adjust based on your needs
+        addprocs(1)  # Adjust based on your needs
         println("Total active workers: ", nworkers())
 
         # Activate the environment and instantiate packages
@@ -176,7 +160,7 @@ if Initialize.directed_walks == true
             include("functions/dynamics.jl")
 
             # Include initialization module only on the main process
-            include("init_copy1.jl")
+            include("init.jl")
             using .Initialize
 
             # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
@@ -198,13 +182,15 @@ if Initialize.directed_walks == true
     	    stability_upper_bound = $stability_upper_bound
     	    k_max = $k_max
     	    k_max_HIC = $k_max_HIC
+            machine_data_dict = $machine_data_dict
+
 
         end
 
         # Perform directed walks in parallel using Distributed.@distributed
         print("I'm trying to do parallel computing.... fingers crossed!")
         results = @sync @distributed (vcat) for i in 1:num_dws ## TRY WITHOUT @SYNC! or with ASYNC
-            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, Initialize.dir_dynamics, Initialize.case_name, k_max, k_max_HIC)
+            dw_ops, dw_stability = DW_step_single_op(data_tight_tmp, feasible_ops_polytope, infeasible_ops_polytope, i, closest_ops[i], cls_op[i], variable_loads, pf_results_feas_polytope, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, machine_data_dict, k_max, k_max_HIC)
             (dw_ops, dw_stability)  # Return a tuple of results, the last line is collected by the @distributed macro. same as 'return'.
         end
 
@@ -246,6 +232,8 @@ if Initialize.directed_walks == true
 
 end
 
+clean_temp_files()
+GC.gc()
 
 # Create a multivariate normal distribution and sample from this distribution
 if Initialize.mvnd_sampling == true

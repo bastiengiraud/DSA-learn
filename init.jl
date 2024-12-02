@@ -17,7 +17,7 @@ lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename
 
 # include path for power systems steady state data
 case_number =               "39"
-tag =			    "SD10"
+tag =			    "try" #"SD10"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
 file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
@@ -61,8 +61,8 @@ mvnd_sampling =             false
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
-hyperplanes =               100
-polytope_samples =          4000
+hyperplanes =               5 #100
+polytope_samples =          11 # 4000
 mvnd_samples =              1
 
 # specify stopping criteria for hyperplane generation
@@ -81,8 +81,8 @@ stability_ub =              0.0325
 
 # specify for how many of the eigenvalues closest to the imaginary axis you want to do DWs
 dw_computation =            "parallel"
-k_max =                     30
-k_max_HIC =                 15
+k_max =                     3 # 30
+k_max_HIC =                 3 # 15
 distance =                  [0.015, 0.01, 0.005]
 alpha =                     [4, 3, 2, 1] # [2, 1.5, 1, 0.5]
 

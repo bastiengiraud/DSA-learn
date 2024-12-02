@@ -39,13 +39,38 @@ function df_to_dict(df)
     return nested_dict
 end
 
-function create_machine(dir_dynamics, case_name, gen_number)
-    # https://nrel-sienna.github.io/PowerSystems.jl/v1.8/model_library/generated_Machine/#RoundRotorQuadratic
-
+function load_machine_data(dir_dynamics, case_name)
+    # Define file paths
     dir_machine = joinpath(dir_dynamics, case_name, "machine.csv")
-    df = CSV.read(dir_machine, DataFrame; delim=';', header=false) 
+    dir_avr = joinpath(dir_dynamics, case_name, "avr.csv")
+    dir_gov = joinpath(dir_dynamics, case_name, "gov.csv")
+    dir_pss = joinpath(dir_dynamics, case_name, "pss.csv")
+
+    # Read data and convert to dictionaries
+    machine_data = df_to_dict(CSV.read(dir_machine, DataFrame; delim=';', header=false))
+    avr_data = df_to_dict(CSV.read(dir_avr, DataFrame; delim=';', header=false))
+    gov_data = df_to_dict(CSV.read(dir_gov, DataFrame; delim=';', header=false))
+    pss_data = df_to_dict(CSV.read(dir_pss, DataFrame; delim=';', header=false))
+
+    # Combine all into a single dictionary
+    machine_data_dict = Dict(
+        :machine => machine_data,
+        :avr => avr_data,
+        :gov => gov_data,
+        :pss => pss_data
+    )
+
+    return machine_data_dict
+end
+
+
+
+
+
+
+function create_machine(machine_data, gen_number)
+    # https://nrel-sienna.github.io/PowerSystems.jl/v1.8/model_library/generated_Machine/#RoundRotorQuadratic
     
-    machine_data = df_to_dict(df)
     operation = machine_data["$gen_number"]["Operation"]
 
     if machine_data["$gen_number"]["Type"] == "GENROU"
@@ -82,12 +107,8 @@ function create_machine(dir_dynamics, case_name, gen_number)
 
 end
 
-function create_shaft(dir_dynamics, case_name, gen_number) # 39-bus machine old
+function create_shaft(machine_data, gen_number) # 39-bus machine old
 
-    dir_machine = joinpath(dir_dynamics, case_name, "machine.csv") # machine_old
-    df = CSV.read(dir_machine, DataFrame; delim=';', header=false) 
-    
-    machine_data = df_to_dict(df)
 
     if machine_data["$gen_number"]["Type"] == "GENROU"
 
@@ -109,12 +130,7 @@ end
 
 #avrdata = create_avr(dir_dynamics, case_name, 1)
 
-function create_avr(dir_dynamics, case_name, gen_number) # 39-bus avr old
-
-    dir_avr = joinpath(dir_dynamics, case_name, "avr.csv") # avr_old
-    df = CSV.read(dir_avr, DataFrame; delim=';', header=false) 
-    
-    avr_data = df_to_dict(df)
+function create_avr(avr_data, gen_number) # 39-bus avr old
 
     if avr_data["$gen_number"]["Type"] == "AVRTypeI" # 
 
@@ -178,12 +194,7 @@ function create_avr(dir_dynamics, case_name, gen_number) # 39-bus avr old
 end
 
 
-function create_gov(dir_dynamics, case_name, operation, gen_number) # 39-bus: gov 2
-
-    dir_gov = joinpath(dir_dynamics, case_name, "gov.csv")
-    df = CSV.read(dir_gov, DataFrame; delim=';', header=false) 
-    
-    gov_data = df_to_dict(df)
+function create_gov(gov_data, operation, gen_number) # 39-bus: gov 2
 
     if operation == "NG"
 
@@ -234,13 +245,8 @@ function create_gov(dir_dynamics, case_name, operation, gen_number) # 39-bus: go
 end
 
 
-function create_pss(dir_dynamics, case_name, operation, gen_number)
+function create_pss(pss_data, operation, gen_number)
     # http://www1.sel.eesc.usp.br/ieee/TwoArea/Two%20area%20four%20generator%20model%20PSSE%20study%20report.pdf
-
-    dir_pss = joinpath(dir_dynamics, case_name, "pss.csv")
-    df = CSV.read(dir_pss, DataFrame; delim=';', header=false) 
-    
-    pss_data = df_to_dict(df)
 
     if pss_data["$gen_number"]["Type"] == "IEEEST" 
 
@@ -319,7 +325,13 @@ end
 
 
 
-function construct_dynamic_model(system, dir_dynamics, case_name)
+function construct_dynamic_model(system, machine_data_dict)
+
+    # Access dictionary elements using keys
+    machine_data = machine_data_dict[:machine]
+    avr_data = machine_data_dict[:avr]
+    gov_data = machine_data_dict[:gov]
+    pss_data = machine_data_dict[:pss]
 
     # add NGs and SYNCs 
     for g in get_components(Generator, system)
@@ -327,11 +339,11 @@ function construct_dynamic_model(system, dir_dynamics, case_name)
         generator_bus = get_number(get_bus(g))
 
         # make dynamic data for the generator at that bus
-        machine, operation = create_machine(dir_dynamics, case_name, generator_bus)
-        shaft = create_shaft(dir_dynamics, case_name, generator_bus)
-        avr = create_avr(dir_dynamics, case_name, generator_bus)
-        gov = create_gov(dir_dynamics, case_name, operation, generator_bus)
-        pss = create_pss(dir_dynamics, case_name, operation, generator_bus)
+        machine, operation = create_machine(machine_data, generator_bus)
+        shaft = create_shaft(machine_data, generator_bus)
+        avr = create_avr(avr_data, generator_bus)
+        gov = create_gov(gov_data, operation, generator_bus)
+        pss = create_pss(pss_data, operation, generator_bus)
 
         # construct dynamic generator
         case_gen = DynamicGenerator(
