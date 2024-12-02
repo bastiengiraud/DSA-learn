@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 # directories to ignore
 output/
 ML agents/
 0) checkpoint/
+=======
+
+# directories to ignore
+output/
+ML agents/
+>>>>>>> 1f8d221f2c22663afa7e178408cd706819022b63

@@ -16,10 +16,10 @@ stopping_percentage, contingencies_inf, contingencies_n1, dw_computation, k_max,
 lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_bound, stability_lb, stability_ub
 
 # include path for power systems steady state data
-case_number =               "39"
-tag =			    "SD10"
+case_number =               "14"
+tag =			    "SD7"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
-file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
+file_path =                 joinpath(data_path, "pglib_opf_case14_ieee.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
 # file directory for dynamic data
 dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/") 
@@ -47,7 +47,7 @@ opt_samples =               500
 imp_dataset_filename =      "$(case_number)bus_imp_ops.csv"
 imp_flows_filename =        "$(case_number)bus_imp_flows.csv"
 imp_macros =                "$(case_number)bus_macros_imp.csv"
-lhc_imp_samples =           2500
+lhc_imp_samples =           4000
 nb_imp_samples =            10000
 
 # initialize data
@@ -56,17 +56,17 @@ push_load_pf(network_data) # add the powerfactor of the loads to the dataset
 
 # specify sampling methods
 sss_analysis =              true
-directed_walks =            true
-mvnd_sampling =             false
+directed_walks =            false
+mvnd_sampling =             true
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
 hyperplanes =               100
-polytope_samples =          4000
+polytope_samples =          1500
 mvnd_samples =              1
 
 # specify stopping criteria for hyperplane generation
-stopping_iteration =        30
+stopping_iteration =        25
 stopping_percentage =       0.05
 
 # specify infeasible contingencies, determine which line outages you want to consider for N-1 security
@@ -84,7 +84,7 @@ dw_computation =            "parallel"
 k_max =                     30
 k_max_HIC =                 15
 distance =                  [0.015, 0.01, 0.005]
-alpha =                     [4, 3, 2, 1] # [2, 1.5, 1, 0.5]
+alpha =                     [2, 1.5, 1, 0.5]
 
 # set load profile
 nominal_load = true

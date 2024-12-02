@@ -48,7 +48,7 @@ include(joinpath(root_dir, "functions/support.jl"))
 include(joinpath(root_dir, "functions/write_dfs.jl"))
 
 # import initialization module
-include(joinpath(root_dir, "init.jl"))
+include(joinpath(root_dir, "init_copy_imp.jl"))
 using .Initialize
 
 # check if properly initialized
@@ -56,6 +56,10 @@ check_initialization_imp()
 
 variable_loads = Initialize.variable_loads
 #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+
+print("LHC in samples: ", Initialize.lhc_imp_samples, "\n")
+print("Importance samples: ", Initialize.nb_imp_samples, "\n")
+print("162 bus importance sampling with 0.0275-0.0325 stability boundary. load scaled 0.8", "\n")
 
 # Record start time
 start_time = time()
@@ -97,6 +101,8 @@ tollerance = 1e-4
 data_opf_verif = deepcopy(Initialize.network_data)
 
 for i in 1:nb_samples     
+
+    print("this is sample number: ", i)
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = sample_ops[i,g] 
@@ -162,6 +168,8 @@ for i in 1:nb_samples
     vm_vio_over = 0.0
     vm_vio_under = 0.0
     sm_vio = 0.0
+    pg_vio = 0.0
+    qg_vio = 0.0
 
     for i in 0:(length(multinetwork["nw"])-1)
         # https://github.com/lanl-ansi/PowerModels.jl/blob/30e3d392fd95f1c5a81abd248ac3acc9462211b8/src/prob/pf.jl#L286-L292
@@ -268,6 +276,8 @@ for i in 1:nb_samples
         vm_vio_over = 0.0
         vm_vio_under = 0.0
         sm_vio = 0.0
+        pg_vio = 0.0
+        qg_vio = 0.0
 
         for i in 0:(length(multinetwork["nw"])-1)
             #PF_res2 = solve_ac_opf(multinetwork["nw"]["$i"], optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -355,8 +365,9 @@ op_info_infeas_pol = op_info_infeas
 if Initialize.sss_analysis == true
 
     # define stability boundary
-    stability_lower_bound = Initialize.stability_boundary - Initialize.stability_margin
-    stability_upper_bound = Initialize.stability_boundary + Initialize.stability_margin
+    stability_lower_bound = Initialize.stability_lb
+    stability_upper_bound = Initialize.stability_ub
+    stability_boundary = Initialize.stability_bound
 
     # perform small signal stability analysis for feasible samples
     result_sss_feas, _, _, _ = @timed begin # elapsed_time_sss, memory_sss, garbage_sss
@@ -373,6 +384,8 @@ if Initialize.sss_analysis == true
     damp_pol_infeas, dist_pol_infeas, _ = result_sss_infeas
 end
 
+println("these are the feasible damping ratios: ", damp_pol_feas)
+
 
 ################# importance sampling ###################
 
@@ -383,8 +396,8 @@ using LinearAlgebra
 nb_imp_samples = Initialize.nb_imp_samples
 
 # define stability boundary
-lower_bound = Initialize.stability_boundary - Initialize.stability_margin
-upper_bound = Initialize.stability_boundary + Initialize.stability_margin
+lower_bound = Initialize.stability_lb
+upper_bound = Initialize.stability_ub
 
 # get indices of ops in stability boundary region which are AC feasible
 boundary_ops_ind = ops_in_stability_boundary(damp_pol_feas, lower_bound, upper_bound)
@@ -392,6 +405,7 @@ boundary_ops = feasible_ops[boundary_ops_ind]
 
 # get number of boundary OPs MVND is constructed over
 num_boundary_ops = length(boundary_ops)
+print("number of boundary ops: ", num_boundary_ops, "\n")
 
 # distance to stability boundary of current sampled operating point
 function boundary_distance(current_op, boundary_op)
@@ -448,6 +462,8 @@ tollerance = 1e-4
 data_opf_verif = deepcopy(Initialize.network_data)
 
 for i in 1:nb_imp_samples   
+
+    print("this is sample number: ", i, "\n")
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = importance_samples[g,i] 
@@ -513,6 +529,8 @@ for i in 1:nb_imp_samples
     vm_vio_over = 0.0
     vm_vio_under = 0.0
     sm_vio = 0.0
+    pg_vio = 0.0
+    qg_vio = 0.0
 
     for i in 0:(length(multinetwork["nw"])-1)
         # https://github.com/lanl-ansi/PowerModels.jl/blob/30e3d392fd95f1c5a81abd248ac3acc9462211b8/src/prob/pf.jl#L286-L292
@@ -619,6 +637,8 @@ for i in 1:nb_imp_samples
         vm_vio_over = 0.0
         vm_vio_under = 0.0
         sm_vio = 0.0
+        pg_vio = 0.0
+        qg_vio = 0.0
 
         for i in 0:(length(multinetwork["nw"])-1)
             #PF_res2 = solve_ac_opf(multinetwork["nw"]["$i"], optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))

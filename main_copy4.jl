@@ -51,7 +51,7 @@ include("functions/ssa_module.jl")
 include("functions/dynamics.jl")
 
 # Include initialization module only on the main process
-include("init.jl")
+include("init_copy4.jl")
 using .Initialize
 
 print("Small-signal analysis: ", Initialize.sss_analysis, "\n")
@@ -176,7 +176,7 @@ if Initialize.directed_walks == true
             include("functions/dynamics.jl")
 
             # Include initialization module only on the main process
-            include("init.jl")
+            include("init_copy4.jl")
             using .Initialize
 
             # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
