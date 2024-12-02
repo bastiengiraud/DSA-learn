@@ -62,7 +62,7 @@ variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the IND
 
 # specify number of hyperplanes and samples in polytope and mvnd 
 hyperplanes =               5 #100
-polytope_samples =          11 # 4000
+polytope_samples =          10 # 4000
 mvnd_samples =              1
 
 # specify stopping criteria for hyperplane generation

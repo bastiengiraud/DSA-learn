@@ -754,8 +754,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
         end
 
         # clear temp folder
-        clean_temp_files()
-        GC.gc()
+        # clean_temp_files()
+        # GC.gc()
 
         if (stability_lower_bound < current_damping) && 
             (current_damping < stability_upper_bound)
@@ -841,8 +841,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
             end
 
             # clear temp folder
-            clean_temp_files()
-            GC.gc()
+            # clean_temp_files()
+            # GC.gc()
 
 
             ############ continue directed walks along a single dimension
@@ -926,8 +926,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
     end
         
     #close(file)
-    clean_temp_files()
-    GC.gc()
+    # clean_temp_files()
+    # GC.gc()
 
     return directed_walk_ops, directed_walk_stability
 
@@ -1030,7 +1030,7 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
             update_data!(PF_res0["solution"], flows0) # add branch flows to solution
             initial_feasibility, pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio = check_ac_feasibility(data_tight_tmp, PF_res0["solution"], tollerance)
 
-            print(pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio)
+            #print(pg_vio, qg_vio, vm_vio_over, vm_vio_under, sm_vio)
             if i == 0
                 # if PF_res0["termination_status"] != LOCALLY_SOLVED  || PF_res0["primal_status"] != FEASIBLE_POINT || PF_res0["dual_status"] != FEASIBLE_POINT # initial_feasibility != true
                 if initial_feasibility != true 
