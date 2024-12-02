@@ -4,12 +4,12 @@ include("contingency.jl")
 include("acpfcorrect.jl")
 
 # import initialization module
-init_dir = joinpath(dirname(@__DIR__), "init.jl")
-include(init_dir)
-using .Initialize
+#init_dir = joinpath(dirname(@__DIR__), "init.jl")
+#include(init_dir)
+#using .Initialize
 
-k_max = Initialize.k_max
-k_max_HIC = Initialize.k_max_HIC
+#k_max = Initialize.k_max
+#k_max_HIC = Initialize.k_max_HIC
 
 
 function closest_to_zero_indices(arr, N::Int)
@@ -290,7 +290,7 @@ end
 
 
 
-function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, closest_ops, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
+function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, closest_ops, cls_op, variable_loads, pf_results_prev, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, dir_dynamics, case_name, k_max, k_max_HIC)
 
     dw_dir = joinpath(@__DIR__, "DW_file_try.txt")
     file = open(dw_dir, "w")
@@ -298,8 +298,6 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
 
-    stability_boundary = Initialize.stability_boundary # minimal damping sought after
-    stability_margin = Initialize.stability_margin # margin around damping 
     perturbation = 1e-6 # perturbation size of generator
 
     plot_damping = []
@@ -435,8 +433,8 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
                 break
             end
 
-            if (stability_boundary - stability_margin < current_damping) && 
-                (current_damping < stability_boundary + stability_margin)
+            if (stability_lower_bound < current_damping) && 
+                (current_damping < stability_upper_bound)
 
                 ########### sample points around first HIC point
                 print("OP number: ", (index - 1),"/", length(closest_ops), ", Sampling around first HIC point __________________", "\n")
@@ -582,8 +580,8 @@ function DW_step(data_tight, feasible_ops_polytope, infeasible_ops_polytope, clo
 
                     print("current damping is :", current_damping, "\n")
 
-                    if (stability_boundary - stability_margin > current_damping) || 
-                        (current_damping > stability_boundary + stability_margin) # stop if you left the HIC
+                    if (stability_lower_bound > current_damping) || 
+                        (current_damping > stability_upper_bound) # stop if you left the HIC
                         break
                     end
                 
@@ -604,7 +602,7 @@ end
 
 
 
-function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, dir_dynamics, case_name)
+function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_polytope, op_number, closest_op, cls_op, variable_loads, pf_results_prev, distance, alpha, stability_boundary, stability_lower_bound, stability_upper_bound, dir_dynamics, case_name, k_max, k_max_HIC)
 
     #dw_dir = joinpath(@__DIR__, "DW_file_try_$(op_number).txt")
     #file = open(dw_dir, "w")
@@ -612,8 +610,6 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
     pm, N, vars, header = instantiate_system_QCRM(data_tight, variable_loads)
     pg_numbers, vm_numbers, pd_numbers = extract_number_and_type(vcat(header[1]))
 
-    stability_boundary = Initialize.stability_boundary # minimal damping sought after
-    stability_margin = Initialize.stability_margin # margin around damping 
     perturbation = 1e-6 # perturbation size of generator
 
     plot_damping = []
@@ -670,7 +666,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
     # maximum on number of directed walk steps
     for DW in 1:k_max
 
-        print("OP number: ", op_number, ", Directed walk number: $DW __________________", "\n")
+        print("OP number: ", op_number, ", Directed walk number: $DW ________", current_damping, "\n")
 
         # if finished with DWs in HIC, skip to next OP
         if HIC_reached == true
@@ -734,26 +730,29 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
             print("This OP already exists, not adding it to the dataset.", "\n")
         end
         
-        # push!(directed_walk_ops, OP_tmp)
-        # push!(directed_walk_stability, (stability["damping"], stability["distance"]))
-
         current_damping = stability["damping"]
 
         print("current damping is :", current_damping, "\n")
+	
+	if (0.02 < current_damping) && (current_damping < 0.04)
+            #push!(directed_walk_ops, OP_tmp)
+	    #push!(directed_walk_stability, (stability["damping"], stability["distance"]))
+	    #print("Adding medium HIC point to dataset, current damping: ", current_damping, "\n")
+        end
 
         if current_damping < 0 # stop directed walks if unstable point
             break
         end
 
-        if (stability_boundary - stability_margin < current_damping) && 
-            (current_damping < stability_boundary + stability_margin)
+        if (stability_lower_bound < current_damping) && 
+            (current_damping < stability_upper_bound)
 
             # add the first point in the HIC region
             push!(directed_walk_ops, OP_tmp)
             push!(directed_walk_stability, (stability["damping"], stability["distance"]))
 
             ########### sample points around first HIC point
-            print("OP number: ", op_number, ", Sampling around first HIC point __________________", "\n")
+            print("OP number: ", op_number, ", Sampling around first HIC point _________", current_damping, "\n")
             data_surround = deepcopy(data_build)
             surrounding_ops = []
 
@@ -833,7 +832,7 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
             # get direction of steepest gradient descent along a single dimension
             for DW_HIC in 1:k_max_HIC
 
-                print("OP number: ", op_number, ", HIC directed walk number: $DW_HIC __________________", "\n")
+                print("OP number: ", op_number, ", HIC directed walk number: $DW_HIC ________", current_damping, "\n")
 
                 # compute damping ratio with perturbed generator setpoints     
                 for_grad, damping_forward, dist_forward = perturbation_forward(data_build, dir_dynamics, case_name, current_damping, perturbation, stability_boundary)
@@ -896,8 +895,8 @@ function DW_step_single_op(data_tight, feasible_ops_polytope, infeasible_ops_pol
 
                 print("current damping is :", current_damping, "\n")
 
-                if (stability_boundary - stability_margin > current_damping) || 
-                    (current_damping > stability_boundary + stability_margin) # stop if you left the HIC
+                if (stability_lower_bound > current_damping) || 
+                    (current_damping > stability_upper_bound) # stop if you left the HIC
                     break
                 end
             
@@ -1128,7 +1127,7 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
             construct_dynamic_model(sys_studied, dir_dynamics, case_name)
             stability = small_signal_module(sys_studied)
 
-            if op_flag_correct["N0"] == 1 && op_flag_correct["N1"] == 1 && 0.0275 <= stability["damping"] <= 0.0325
+            if op_flag_correct["N0"] == 1 && op_flag_correct["N1"] == 1 #&& 0.0275 <= stability["damping"] <= 0.0325
                 # add feasible HIC sample
                 nb_feasible_dws += 1 
                 push!(pf_results_feas, PF_res2["solution"]["nw"]["0"])

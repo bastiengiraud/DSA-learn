@@ -17,7 +17,7 @@ lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename
 
 # include path for power systems steady state data
 case_number =               "39"
-tag =			    "SD10"
+tag =			    "SD13"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
 file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
@@ -81,7 +81,7 @@ stability_ub =              0.0325
 
 # specify for how many of the eigenvalues closest to the imaginary axis you want to do DWs
 dw_computation =            "parallel"
-k_max =                     30
+k_max =                     40
 k_max_HIC =                 15
 distance =                  [0.015, 0.01, 0.005]
 alpha =                     [4, 3, 2, 1] # [2, 1.5, 1, 0.5]

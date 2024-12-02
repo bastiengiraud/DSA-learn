@@ -17,7 +17,7 @@ lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename
 
 # include path for power systems steady state data
 case_number =               "39"
-tag =			    "SD10"
+tag =			    "SDM4"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
 file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
@@ -34,10 +34,10 @@ mvnd_macros_filename =      "$(case_number)bus_$(tag)_method_macros_mvnd.csv"
 method_macros =             "$(case_number)bus_$(tag)_macros_method.csv"
 
 # LHC sampling initialization
-lhc_dataset_filename =      "$(case_number)bus_lhc_ops.csv"
-lhc_flows_filename =        "$(case_number)bus_lhc_flows.csv"
-lhc_macros =                "$(case_number)bus_macros_lhc.csv"
-lhc_samples =               10000
+lhc_dataset_filename =      "$(case_number)bus_test_lhc_ops.csv"
+lhc_flows_filename =        "$(case_number)bus_test_lhc_flows.csv"
+lhc_macros =                "$(case_number)bus_test_macros_lhc.csv"
+lhc_samples =               15000
 
 # optimization based sampling
 opt_dataset_filename =      "opt_ops.csv"
@@ -56,17 +56,17 @@ push_load_pf(network_data) # add the powerfactor of the loads to the dataset
 
 # specify sampling methods
 sss_analysis =              true
-directed_walks =            true
+directed_walks =            false
 mvnd_sampling =             false
 variable_loads =            keys(Dict{Int64, Any}())  # 4 => nothing add the INDICES of the loadvars'
 
 # specify number of hyperplanes and samples in polytope and mvnd 
 hyperplanes =               100
-polytope_samples =          4000
-mvnd_samples =              1
+polytope_samples =          1000
+mvnd_samples =              10000
 
 # specify stopping criteria for hyperplane generation
-stopping_iteration =        30
+stopping_iteration =        25
 stopping_percentage =       0.05
 
 # specify infeasible contingencies, determine which line outages you want to consider for N-1 security
@@ -84,7 +84,7 @@ dw_computation =            "parallel"
 k_max =                     30
 k_max_HIC =                 15
 distance =                  [0.015, 0.01, 0.005]
-alpha =                     [4, 3, 2, 1] # [2, 1.5, 1, 0.5]
+alpha =                     [2, 1.5, 1, 0.5]
 
 # set load profile
 nominal_load = true

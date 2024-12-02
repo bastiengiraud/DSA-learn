@@ -406,10 +406,10 @@ function construct_dt_data()
         infeas_damp = vcat(damp_pol_infeas)
 
         # set flag to 1 if the sample has enough damping
-        sss_feas_mask = feas_damp .> Initialize.stability_boundary 
+        sss_feas_mask = feas_damp .> Initialize.stability_bound
         sss_feas_mask = Int.(sss_feas_mask)
 
-        sss_infeas_mask = infeas_damp .> Initialize.stability_boundary 
+        sss_infeas_mask = infeas_damp .> Initialize.stability_bound 
         sss_infeas_mask = Int.(sss_infeas_mask)
 
         df_flow_f.stable = sss_feas_mask
@@ -434,10 +434,10 @@ function construct_dt_data()
         infeas_damp = vcat(damp_pol_infeas, damp_dws_infeas)
 
         # set flag to 1 if the sample has enough damping
-        sss_feas_mask = feas_damp .> Initialize.stability_boundary 
+        sss_feas_mask = feas_damp .> Initialize.stability_bound 
         sss_feas_mask = Int.(sss_feas_mask)
 
-        sss_infeas_mask = infeas_damp .> Initialize.stability_boundary 
+        sss_infeas_mask = infeas_damp .> Initialize.stability_bound 
         sss_infeas_mask = Int.(sss_infeas_mask)
 
         df_flow_f.stable = sss_feas_mask
@@ -461,10 +461,10 @@ function construct_dt_data()
         infeas_damp = vcat(damp_pol_infeas, damp_dws_infeas, damp_mvnd_infeas)
 
         # set flag to 1 if the sample has enough damping
-        sss_feas_mask = feas_damp .> Initialize.stability_boundary 
+        sss_feas_mask = feas_damp .> Initialize.stability_bound 
         sss_feas_mask = Int.(sss_feas_mask)
 
-        sss_infeas_mask = infeas_damp .> Initialize.stability_boundary 
+        sss_infeas_mask = infeas_damp .> Initialize.stability_bound 
         sss_infeas_mask = Int.(sss_infeas_mask)
 
         df_flow_f.stable = sss_feas_mask
@@ -488,10 +488,10 @@ function construct_dt_data()
         infeas_damp = vcat(damp_pol_infeas, damp_mvnd_infeas)
 
         # set flag to 1 if the sample has enough damping
-        sss_feas_mask = feas_damp .> Initialize.stability_boundary 
+        sss_feas_mask = feas_damp .> Initialize.stability_bound 
         sss_feas_mask = Int.(sss_feas_mask)
 
-        sss_infeas_mask = infeas_damp .> Initialize.stability_boundary 
+        sss_infeas_mask = infeas_damp .> Initialize.stability_bound 
         sss_infeas_mask = Int.(sss_infeas_mask)
 
         df_flow_f.stable = sss_feas_mask

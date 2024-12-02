@@ -130,13 +130,13 @@ test_index = "all"
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
-flow_name_method = 'flows.csv' # DT method data
-flow_name_lhc = 'lhc_flows.csv'
-flow_name_imp = 'imp_flows.csv' 
+flow_name_method = '39bus_method_flows.csv' # DT method data
+flow_name_lhc = '39bus_lhc_flows.csv'
+flow_name_imp = '39bus_imp_flows.csv' 
 
-file_name_method = 'ops.csv' # DT method data
-file_name_lhc = 'lhc_ops.csv'
-file_name_imp = 'imp_ops.csv' 
+file_name_method = '39bus_method_ops.csv' # DT method data
+file_name_lhc = '39bus_lhc_ops.csv'
+file_name_imp = '39bus_imp_ops.csv' 
 
 file_name_result = 'dt_result.csv'
 
@@ -215,9 +215,9 @@ if os.path.exists(file_path_result):
         f.write('')  # Write an empty string to clear the file
 
 # iteratively reduce training set size
-reduce_train = 2
+reduce_train = 1
 initial_fraction = 1.0  # Start with the full dataset
-reduction_step = 0.5    # Reduce by this fraction in each iteration
+reduction_step = 0.0    # Reduce by this fraction in each iteration
 
 for i in range(reduce_train):
     # Calculate the new fraction for the current iteration
@@ -450,9 +450,10 @@ for i in range(reduce_train):
     df_result = pd.DataFrame.from_dict(data_result)
 
     # Append a newline before writing new results
-    with open(file_path_result, 'a') as f:
-        f.write('\n')  # Write a blank line before appending the new results
-        df_result.to_csv(f, sep=';', mode='a', header=f.tell() == 0, index=False)
+    with open(file_path_result, 'a', newline='') as f:
+        if f.tell() > 0:  # Check if the file already has content
+            f.write('\n')  # Add a blank line before appending the new DataFrame
+        df_result.to_csv(f, sep=';', header=f.tell() == 0, index=False)
 
 
 
@@ -485,18 +486,150 @@ FN_damping_lhc = pd.concat([damping_data_lhc[FN_list_lhc], damping_data_method[F
 FN_damping_imp = pd.concat([damping_data_imp[FN_list_imp], damping_data_method[FN_list_imp_method], damping_data_lhc[FN_list_imp_lhc]])
 
 # plot the damping of the missclassified OPs
-x_lb = -1
-bar_width = 0.002
+x_lb = 0
+bar_width = 0.005
 plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_method, FP_damping_method, FN_damping_method, "Proposed method samples - damping vs number of OPs")
 plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_lhc, FP_damping_lhc, FN_damping_lhc, "LHC samples - damping vs number of OPs")
 plot_damping_histograms(x_lb, bar_width, damping_all_test_data, damping_train_data_imp, FP_damping_imp, FN_damping_imp, "Importance samples - damping vs number of OPs")
 
 
 
+##############################################################################
+
+fp_method_ops = pd.concat([op_data_method.iloc[FP_list_method], op_data_lhc.iloc[FP_list_method_lhc], op_data_imp.iloc[FP_list_method_imp]])
+fp_lhc_ops = pd.concat([op_data_lhc.iloc[FP_list_lhc], op_data_method.iloc[FP_list_lhc_method], op_data_imp.iloc[FP_list_lhc_imp]])
+fp_imp_ops = pd.concat([op_data_imp.iloc[FP_list_imp], op_data_method.iloc[FP_list_imp_method], op_data_lhc.iloc[FP_list_imp_lhc]])
+
+fn_method_ops = pd.concat([op_data_method.iloc[FN_list_method], op_data_lhc.iloc[FN_list_method_lhc], op_data_imp.iloc[FN_list_method_imp]])
+fn_lhc_ops = pd.concat([op_data_lhc.iloc[FN_list_lhc], op_data_method.iloc[FN_list_lhc_method], op_data_imp.iloc[FN_list_lhc_imp]])
+fn_imp_ops = pd.concat([op_data_imp.iloc[FN_list_imp], op_data_method.iloc[FN_list_imp_method], op_data_lhc.iloc[FN_list_imp_lhc]])
+
+miss_method = pd.concat([fp_method_ops, fn_method_ops])
+miss_lhc = pd.concat([fp_lhc_ops, fn_lhc_ops])
+miss_imp = pd.concat([fp_imp_ops, fn_imp_ops])
+
+fp_method_cf = fp_method_ops[['N0', 'damping']] # miss_method
+fp_lhc_cf = fp_lhc_ops[['N0', 'damping']] # miss_lhc
+fp_imp_cf = fp_imp_ops[['N0', 'damping']] # miss_imp
+
+# Calculate frequencies for the three conditions in each dataframe
+def calculate_event_frequencies(df):
+    event1 = (df['N0'] == 0).sum()
+    event2 = (df['damping'] < 0.03).sum()
+    event3 = ((df['N0'] == 0) & (df['damping'] < 0.03)).sum()
+    return [event1, event2, event3]
+
+# Get frequencies for each dataframe
+method_counts = calculate_event_frequencies(fp_method_cf)
+lhc_counts = calculate_event_frequencies(fp_lhc_cf)
+imp_counts = calculate_event_frequencies(fp_imp_cf)
+
+# Prepare data for plotting
+data = [method_counts, lhc_counts, imp_counts]
+
+# Labels and colors
+labels = ['N0 == 0', 'damping < 0.03', 'N0 == 0 & damping < 0.03']
+df_labels = ['Method', 'LHC', 'IMP']
+colors = ['#f4a261', '#e76f51', '#e63946']
+
+# Bar plot with spacing between groups
+fig, ax = plt.subplots(figsize=(12, 7))
+width = 0.25  # Width of individual bars
+x = np.arange(len(labels))  # x positions for groups of bars
+
+# Plotting bars with edges
+for i, (d, color) in enumerate(zip(data, colors)):
+    bars = ax.bar(x + i * width, d, width, label=df_labels[i], color=color, edgecolor='black')
+
+    # Adding data labels above the bars
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2, yval, int(yval), 
+                ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+# Customize axes and styling
+ax.set_xticks(x + width)
+ax.set_xticklabels(labels)
+ax.set_ylabel('Frequency of Occurrence', fontsize=12)
+ax.set_title('Causes for False Positive Classification', fontsize=14, fontweight='bold')
+ax.legend(title="Data Source", fontsize=10, title_fontsize=12)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.grid(True, axis='y', linestyle='--', alpha=0.7)
+
+# Increase bottom margin for better layout
+plt.subplots_adjust(bottom=0.15)
+
+# Display plot
+plt.tight_layout()
+plt.show()
 
 
+####################################################################
 
+# Assuming fp_method_ops, fp_lhc_ops, and fp_imp_ops are already defined
+fp_method_violations = fp_method_ops[['N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'damping']] # miss_method
+fp_lhc_violations = fp_lhc_ops[['N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'damping']] # miss_lhc
+fp_imp_violations = fp_imp_ops[['N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'damping']] # miss_imp
 
+# Define bins for damping values
+bins = np.arange(-0.07, 0.07, 0.005)
+labels = ['N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'All Zero']  # Adding 'All Zero' for the extra bar
+
+# Create a figure and axes for the subplots
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(16, 24))  # Adjust the figure size as needed
+
+# Loop through the DataFrames and axes to create the plots
+dataframes = [fp_method_violations, fp_lhc_violations, fp_imp_violations]
+titles = ['Method Violations', 'LHC Violations', 'Importance Violations']
+
+for ax, df, title in zip(axs, dataframes, titles):
+    # Initialize a DataFrame to store the frequency counts per bin
+    bin_counts = pd.DataFrame(0, index=np.arange(len(bins) - 1), columns=labels)
+
+    # Calculate frequencies of non-zero occurrences in each bin
+    for i in range(len(bins) - 1):
+        # Filter rows where 'damping' falls into the current bin range
+        bin_df = df[(df['damping'] >= bins[i]) & (df['damping'] < bins[i + 1])]
+        # Count non-zero occurrences for each column in the current bin
+        for label in labels[:-1]:  # Count for N0P, N0Q, N0L, N0OV, N0UV
+            bin_counts.loc[i, label] = (bin_df[label] != 0).sum()
+        
+        # Count occurrences where all specified columns are zero and damping is less than 0.03
+        all_zero_count = ((bin_df[['N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV']] == 0).all(axis=1) & 
+                          (bin_df['damping'] < 0.03)).sum()
+        bin_counts.loc[i, 'All Zero'] = all_zero_count
+
+    # Plotting
+    width = 0.13  # Width of individual bars within each bin
+
+    # Define colors using a color palette
+    colors = sns.color_palette("YlOrRd", len(labels) - 1)  # Exclude the 'All Zero' bar from this palette
+    colors.append('#1f77b4')  # Append dark blue color for 'All Zero' bar
+
+    # X positions for each set of bars, centered on the bin edges
+    x = np.arange(len(bins) - 1)
+
+    # Plot each label as a separate set of bars within each bin
+    for j, (label, color) in enumerate(zip(labels, colors)):
+        ax.bar(x + j * width - (width * len(labels) / 2), bin_counts[label], width, 
+               label=label, color=color, edgecolor='black')
+
+    # Customize plot
+    ax.set_xticks(x)  # Set x-ticks centered on the bins
+    ax.set_xticklabels([f"{bins[i] * 100:.1f}%-{bins[i + 1] * 100:.1f}%" for i in range(len(bins) - 1)], rotation=30, fontsize=8)
+    ax.set_xlabel('Damping Range (%)', fontsize=12, labelpad=10)  # Updated the x-label to indicate percentage
+    ax.set_ylabel('Frequency of Violations', fontsize=12)
+    ax.set_title(f'False Positive Cases - {title}', fontsize=14, pad=15)
+    ax.legend(title="Violation Type", title_fontsize=12, fontsize=10)
+    ax.grid(True, axis='y', linestyle='--', alpha=0.6)
+
+    # Style adjustments
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+plt.tight_layout()
+plt.show()
 
 
 

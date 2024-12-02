@@ -25,7 +25,7 @@ include(joinpath(root_dir, "functions/support.jl"))
 include(joinpath(root_dir, "functions/write_dfs.jl"))
 
 # import initialization module
-include(joinpath(root_dir, "init_copy_lhc.jl"))
+include(joinpath(root_dir, "init_test.jl"))
 using .Initialize
 
 check_initialization_lhc()
@@ -72,9 +72,7 @@ tollerance = 1e-4
 
 data_opf_verif = deepcopy(Initialize.network_data)
 
-for i in 1:nb_samples  
-
-    print("LHC sample number: ", i)  
+for i in 1:nb_samples    
 
     for g in eachindex(pg_numbers)
         data_opf_verif["gen"]["$(pg_numbers[g])"]["pg"] = sample_ops[i,g] 

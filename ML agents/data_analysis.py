@@ -47,15 +47,15 @@ upper_bound = stability_boundary + margin
 
 # Specify the directory and file name
 directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
-flow_name_method = '39bus_method_flows.csv' # DT method data
-flow_name_lhc = 'lhc_flows.csv'
-flow_name_imp = 'imp_flows.csv' 
+flow_name_method = '39bus_method_flows1.csv' # DT method data
+flow_name_lhc = '39bus_lhc_flows.csv'
+flow_name_imp = '39bus_imp_flows.csv' 
 
-file_name_method = '39bus_method_ops.csv' # DT method data
-file_name_lhc = 'lhc_ops.csv'
-file_name_imp = 'imp_ops.csv' 
+file_name_method = '39bus_method_ops1.csv' # DT method data
+file_name_lhc = '39bus_lhc_ops.csv'
+file_name_imp = '39bus_imp_ops.csv' 
 
-file_name_analysis = 'data_analysis2.csv'
+file_name_analysis = 'data_analysis.csv'
 
 # Create the full file path
 flow_path_method = os.path.join(directory, flow_name_method)
@@ -78,9 +78,9 @@ op_data_lhc = pd.read_csv(file_path_lhc, sep = ';')
 op_data_imp = pd.read_csv(file_path_imp, sep = ';')
 
 # remove duplicates
-method = op_data_method.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
-lhc = op_data_lhc.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
-imp = op_data_imp.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
+method = op_data_method.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
+lhc = op_data_lhc.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
+imp = op_data_imp.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
 
 _, method_duplicates = find_and_remove_duplicates_with_tolerance(method, tol=0.01)
 _, lhc_duplicates = find_and_remove_duplicates_with_tolerance(lhc, tol=0.01)
