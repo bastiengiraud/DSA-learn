@@ -41,21 +41,25 @@ def find_and_remove_duplicates_with_tolerance(df, tol=0.01):
 
 # define stability boundary
 stability_boundary = 0.03
-margin = 0.0025
-lower_bound = stability_boundary - margin
-upper_bound = stability_boundary + margin
+lower_bound = 0.0275
+upper_bound = 0.0325
+
+# specify test set: 'all', 'HIC', 'noHIC'
+test_index = "all"
+case_size = "162"
+method_type = "SD0"
 
 # Specify the directory and file name
-directory = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case39/datasets/"
-flow_name_method = '39bus_method_flows.csv' # DT method data
-flow_name_lhc = 'lhc_flows.csv'
-flow_name_imp = 'imp_flows.csv' 
+directory = f"C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case{case_size}/datasets/"
+flow_name_method = f'{case_size}bus_{method_type}_method_flows.csv' # DT method data
+flow_name_lhc = f'{case_size}bus_lhc_flows.csv'
+flow_name_imp = f'{case_size}bus_imp_flows.csv' 
 
-file_name_method = '39bus_method_ops.csv' # DT method data
-file_name_lhc = 'lhc_ops.csv'
-file_name_imp = 'imp_ops.csv' 
+file_name_method = f'{case_size}bus_{method_type}_method_ops.csv' # DT method data
+file_name_lhc = f'{case_size}bus_lhc_ops.csv'
+file_name_imp = f'{case_size}bus_imp_ops.csv' 
 
-file_name_analysis = 'data_analysis2.csv'
+file_name_analysis = 'data_analysis.csv'
 
 # Create the full file path
 flow_path_method = os.path.join(directory, flow_name_method)
@@ -69,18 +73,29 @@ file_path_imp = os.path.join(directory, file_name_imp)
 file_path_analysis = os.path.join(directory, file_name_analysis)
 
 # Load the dataset
-flow_data_method = pd.read_csv(flow_path_method, sep = ';')
-flow_data_lhc = pd.read_csv(flow_path_lhc, sep = ';')
-flow_data_imp = pd.read_csv(flow_path_imp, sep = ';')
-
 op_data_method = pd.read_csv(file_path_method, sep = ';')
+#op_data_method = op_data_method[(op_data_method['damping'] >= lower_bound) & (op_data_method['damping'] <= upper_bound)]
+#op_data_method = op_data_method.reset_index(drop=False)
+#op_data_method = op_data_method.loc[flow_data_method.index]
 op_data_lhc = pd.read_csv(file_path_lhc, sep = ';')
+#op_data_lhc = op_data_lhc.loc[flow_data_lhc.index]
 op_data_imp = pd.read_csv(file_path_imp, sep = ';')
+#op_data_imp = op_data_imp.loc[flow_data_imp.index]
+
+flow_data_method = pd.read_csv(flow_path_method, sep = ';')
+#flow_data_method = flow_data_method.iloc[op_data_method['index']]
+#flow_data_method = flow_data_method.sample(frac=1.0, random_state=42)
+flow_data_lhc = pd.read_csv(flow_path_lhc, sep = ';')
+#flow_data_lhc = flow_data_lhc.sample(frac=0.5, random_state=42)
+flow_data_imp = pd.read_csv(flow_path_imp, sep = ';')
+#flow_data_imp = flow_data_imp.sample(frac=0.5, random_state=42)
+
+
 
 # remove duplicates
-method = op_data_method.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
-lhc = op_data_lhc.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
-imp = op_data_imp.drop(columns = ['N0', 'flow_viol', 'over_volt', 'under_volt', 'N1', 'damping', 'distance'], axis=1)
+method = op_data_method.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
+lhc = op_data_lhc.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
+imp = op_data_imp.drop(columns = ['N0', 'N0P', 'N0Q', 'N0L', 'N0OV', 'N0UV', 'N1L', 'N1OV', 'N1UV', 'N1', 'damping', 'distance'], axis=1)
 
 _, method_duplicates = find_and_remove_duplicates_with_tolerance(method, tol=0.01)
 _, lhc_duplicates = find_and_remove_duplicates_with_tolerance(lhc, tol=0.01)

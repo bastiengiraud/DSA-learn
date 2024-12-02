@@ -1,1 +1,4 @@
-# output/
+# directories to ignore
+output/
+ML agents/
+0) checkpoint/

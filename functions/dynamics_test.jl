@@ -23,7 +23,7 @@ include("support.jl")
 data_path = joinpath(dirname(@__DIR__), "cases/static/")
 #file_path = joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri
 #file_path = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/1) Smal signal stability/SSA_module/Code_SSAmodule/WSCC_9_bus.raw"
-file_path = joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") #  IEEE118_v32.raw
+file_path = joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") #  IEEE118_v32.raw, pglib_opf_case162_ieee_dtc, pglib_opf_case14_ieee
 #file_path =                  "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/240busWECC_2018_PSS33.raw"
 
 # generator data
@@ -34,7 +34,7 @@ case_name =                 "case162"
 
 # initialize data
 network_data = PowerModels.parse_file(file_path) 
-scale_all_demand(network_data, 0.8)
+scale_all_demand(network_data, 0.7)
 
 # compare results
 result = solve_ac_opf(network_data, optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -63,12 +63,12 @@ time_span = (0.0, 30.0)
 # add a load step
 loads = get_components(c -> c isa ElectricLoad, ElectricLoad, syst)
 load_names = map(c -> get_name(c), loads)
-l_device = get_component(ElectricLoad, syst, "bus19") # PowerSystems.ElectricLoad
-l_change = PowerSimulationsDynamics.LoadChange(1.0, l_device, :P_ref, 0.45) # from 0.5152
+l_device = get_component(ElectricLoad, syst, "bus12") # PowerSystems.ElectricLoad 14: bus5, 162: bus12
+l_change = PowerSimulationsDynamics.LoadChange(1.0, l_device, :P_ref, 0.09) # from 0.5152
 l_trip = PowerSimulationsDynamics.LoadTrip(1.0, l_device)
 
 # define simulation
-sim_studied = Simulation(ResidualModel, syst , pwd(), time_span, l_change) 
+sim_studied = Simulation(ResidualModel, syst , pwd(), time_span)#, l_change) 
 x0 = read_initial_conditions(sim_studied)
 # setpoints = get_setpoints(sim_studied)
 #show_states_initial_value(sim_studied)
