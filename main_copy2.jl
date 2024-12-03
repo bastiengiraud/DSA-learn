@@ -161,7 +161,7 @@ if Initialize.directed_walks == true
             include("functions/dynamics.jl")
 
             # Include initialization module only on the main process
-            include("init.jl")
+            include("init_copy2.jl")
             using .Initialize
 
             # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
