@@ -962,7 +962,7 @@ function dw_ops_feasibility(network_basic, data_tight_tmp, variable_loads, direc
     machine_data_dict = load_machine_data(dir_dynamics, case_name)
 
     for counter in 1:(length(directed_walk_ops[:])) 
-        if counter % 100 == 0 # clear temp folder after every 500 iterations
+        if counter % 500 == 0 # clear temp folder after every 500 iterations
             clean_temp_files()
             GC.gc()
             #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")

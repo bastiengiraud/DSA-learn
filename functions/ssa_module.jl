@@ -134,7 +134,7 @@ function sss_evaluation(data_tight_HP, global_OPs, pg_numbers, vm_numbers, pd_nu
         push!(total_dist, stability["distance"])
         push!(total_eigen, stability["eigenvalues"])
 
-        if i % 100 == 0 # clear temp folder after every 500 iterations
+        if i % 500 == 0 # clear temp folder after every 500 iterations
             clean_temp_files()
             GC.gc()
             #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")

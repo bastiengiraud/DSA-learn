@@ -822,3 +822,21 @@ function clean_temp_files()
 end
 
 
+function clean_full_temp_folder()
+    temp_dir = tempdir()  # Get the system's temporary directory
+    println("Cleaning temp folder: $temp_dir")
+    
+    # List all files and directories in the temp folder
+    for entry in readdir(temp_dir, join=true)
+        try
+            if isdir(entry)
+                rm(entry, recursive=true)  # Remove directories and their contents
+            else
+                rm(entry)  # Remove files
+            end
+        catch e
+            @warn "Failed to remove $entry" exception=(e, catch_backtrace())
+        end
+    end
+    println("Temp folder cleaned successfully!")
+end

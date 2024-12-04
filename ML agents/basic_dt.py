@@ -119,8 +119,8 @@ def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, sec_tr
 
 
 # specify test set: 'all', 'HIC'
-case_size = "162"
-method_type = "SD0"
+case_size = "39"
+method_type = "SD10"
 
 test_index = "all"
 equal_split = 'false'

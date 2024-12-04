@@ -7,6 +7,7 @@
 # activate current path and initialize environment
 using Pkg
 using Distributed
+using FilePaths
 
 # Activate the environment and instantiate packages
 Pkg.activate(@__DIR__)
@@ -43,6 +44,10 @@ print("Normal DWs. SD 39 bus. 0.0275 - 0.0325. loads 0.8.", "\n")
 print("this is alpha: ", Initialize.alpha , "\n")
 print("this is k_max: ", Initialize.k_max, "and k_max_hic: ", Initialize.k_max_HIC, "\n")
 
+# set temp folder to store temporary files
+ENV["TMP"] = Initialize.temp_directory
+print("this is the tempdir: ", tempdir(), "\n")
+clean_full_temp_folder()
 
 #clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
@@ -164,6 +169,10 @@ if Initialize.directed_walks == true
             include("init_copy2.jl")
             using .Initialize
 
+            # set temp folder to store temporary files
+            ENV["TMP"] = Initialize.temp_directory
+            print("this is the tempdir: ", tempdir(), "\n")
+
             # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
 
         end
@@ -225,6 +234,7 @@ if Initialize.directed_walks == true
 
             println("Cleaning temporary files after batch $start_idx-$end_idx...")
             clean_temp_files()
+            clean_full_temp_folder()
             GC.gc()
         end
 
@@ -232,7 +242,7 @@ if Initialize.directed_walks == true
         # remove workers and continue code on one core
         rmprocs(workers())
 
-        # Extracting `dw_ops` and `dw_stability` using comprehension
+        # # Extracting `dw_ops` and `dw_stability` using comprehension
         directed_walk_ops = vcat([result[1] for result in all_results]...)
         directed_walk_stability = vcat([result[2] for result in all_results]...)
         
