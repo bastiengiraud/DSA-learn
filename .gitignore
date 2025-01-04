@@ -2,6 +2,11 @@
 output/
 ML agents/
 0) checkpoint/
+cases/dynamic/case9
+cases/dynamic/case14
+cases/dynamic/case30
+cases/dynamic/case57
+cases/dynamic/case118
 
 # files to ignore
 DW_file_try.txt
@@ -18,3 +23,21 @@ main_copy3.jl
 main_copy4.jl
 ToolBox.jl
 
+
+# untrack the following files:
+# git rm --cached "0) checkpoint/"
+# git rm --cached "ML agents/"
+# git rm --cached "output/"
+# git rm --cached DW_file_try.txt
+# git rm --cached init_copy_imp.jl
+# git rm --cached init_copy_lhc.jl
+# git rm --cached init_copy1.jl
+# git rm --cached init_copy2.jl
+# git rm --cached init_copy3.jl
+# git rm --cached init_copy4.jl
+# git rm --cached init_test.jl
+# git rm --cached main_copy1.jl
+# git rm --cached main_copy2.jl
+# git rm --cached main_copy3.jl
+# git rm --cached main_copy4.jl
+# git rm --cached ToolBox.jl
