@@ -28,8 +28,29 @@ include(joinpath(root_dir, "functions/write_dfs.jl"))
 include(joinpath(root_dir, "init_copy_lhc.jl"))
 using .Initialize
 
+print("LHC samples: ", Initialize.lhc_samples, "\n")
+print("39 bus importance sampling with 0.0275-0.0325 stability boundary. load scaled 0.8", "\n")
+
 check_initialization_lhc()
-#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+
+# set temporary directory
+parent_temp = "/dev/shm"
+custom_temp = "tempdir_lhc" # make custom name for temp folder
+temp_folder = joinpath(parent_temp, custom_temp) # create path for folder
+
+# Check if the folder exists
+if !isdir(temp_folder)
+    println("Folder does not exist. Creating folder: ", temp_folder)
+    mkdir(temp_folder)  # Create the folder
+else
+    println("Folder already exists: ", temp_folder)
+end
+
+# set the temp folder
+ENV["TMP"] = temp_folder
+print("this is the tempdir: ", tempdir(), "\n")
+clean_full_temp_folder()
+
 
 variable_loads = Initialize.variable_loads
 
@@ -372,5 +393,7 @@ df_flow = construct_dt_data()
 output_path_dt_data = joinpath(Initialize.directory, Initialize.lhc_flows_filename)
 CSV.write(output_path_dt_data, df_flow; delim=';')  
 
-# clear temp folder
-#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+# clean up after you're done
+rm(temp_folder; force=true, recursive=true)
+println("Temporary folder removed: ", temp_folder)
+
