@@ -1,42 +1,44 @@
-┌ Info: 2024-11-26T15:11:02.225 [12584:1]: Pre-Initializing Simulation States
+┌ Info: 2024-12-10T15:56:24.262 [25900:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:265
-┌ Info: 2024-11-26T15:11:02.225 [12584:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2024-12-10T15:56:24.262 [25900:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems C:\Users\bagir\.julia\packages\PowerSystems\xh3fM\src\base.jl:395
-┌ Info: 2024-11-26T15:11:02.244 [12584:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2024-12-10T15:56:24.513 [25900:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows C:\Users\bagir\.julia\packages\PowerFlows\6nw6s\src\nlsolve_ac_powerflow.jl:47
-┌ Info: 2024-11-26T15:11:02.244 [12584:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2024-12-10T15:56:24.513 [25900:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems C:\Users\bagir\.julia\packages\PowerSystems\xh3fM\src\base.jl:395
-┌ Info: 2024-11-26T15:11:02.612 [12584:1]: Residual from initial guess: max = 9.956669956470934e-10 at 526, total = 3.6998271452925916e-9
+┌ Info: 2024-12-10T15:56:24.752 [25900:1]: Residual from initial guess: max = 1.1492318208183861e-11 at 469, total = 7.221392144377455e-11
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\nlsolve_wrapper.jl:115
-┌ Info: 2024-11-26T15:11:02.657 [12584:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2024-12-10T15:56:24.787 [25900:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\nlsolve_wrapper.jl:82
-┌ Info: 2024-11-26T15:11:02.657 [12584:1]: Attaching Perturbations
+┌ Info: 2024-12-10T15:56:24.788 [25900:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:299
-┌ Info: 2024-11-26T15:11:02.658 [12584:1]: Simulations status = BUILT
+┌ Info: 2024-12-10T15:56:24.788 [25900:1]: Simulations status = BUILT
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:462
-┌ Info: 2024-11-26T15:11:02.658 [12584:1]: 
+┌ Info: 2024-12-10T15:56:24.788 [25900:1]: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     438ms            62.8MiB    
+│                 Total measured:                     866ms            74.0MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    438ms  100.0%   62.7MiB  100.0%
-│    Build Simulation Inputs                  1   5.26ms    1.2%   2.57MiB    4.1%
-│      Wrap Branches                          1   18.5μs    0.0%      208B    0.0%
-│      Wrap Dynamic Injectors                 1    861μs    0.2%    220KiB    0.3%
-│      Calculate MM, DAE_vector, Tota...      1   1.04ms    0.2%    873KiB    1.4%
-│      Wrap Static Injectors                  1    467μs    0.1%    168KiB    0.3%
-│    Pre-initialization                       1   19.8ms    4.5%   4.95MiB    7.9%
-│      Power Flow solution                    1   18.3ms    4.2%   4.53MiB    7.2%
-│      Initialize Static Injectors            1   1.40μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   1.12ms    0.3%    410KiB    0.6%
-│    Calculate Jacobian                       1    366ms   83.5%   48.9MiB   78.0%
-│    Make Model Function                      1   22.6μs    0.0%   5.84KiB    0.0%
-│    Initial Condition NLsolve refine...      1   46.8ms   10.7%   6.26MiB   10.0%
-│    Build Perturbations                      1   44.9μs    0.0%   10.1KiB    0.0%
-│    Make DiffEq Problem                      1    181μs    0.0%   13.8KiB    0.0%
+│  Build Simulation                           1    866ms  100.0%   74.0MiB  100.0%
+│    Build Simulation Inputs                  1    346ms   40.0%   10.1MiB   13.7%
+│      Wrap Branches                          1   20.9μs    0.0%      208B    0.0%
+│      Wrap Dynamic Injectors                 1   37.7ms    4.4%    968KiB    1.3%
+│      Calculate MM, DAE_vector, Tota...      1   1.16ms    0.1%    873KiB    1.2%
+│      Wrap Static Injectors                  1   62.2ms    7.2%    880KiB    1.2%
+│    Pre-initialization                       1    260ms   30.0%   8.64MiB   11.7%
+│      Power Flow solution                    1    258ms   29.8%   8.23MiB   11.1%
+│      Initialize Static Injectors            1   2.00μs    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1   1.08ms    0.1%    405KiB    0.5%
+│    Calculate Jacobian                       1    223ms   25.7%   48.9MiB   66.1%
+│    Make Model Function                      1   15.3μs    0.0%   5.84KiB    0.0%
+│    Initial Condition NLsolve refine...      1   37.0ms    4.3%   6.26MiB    8.5%
+│    Build Perturbations                      1   41.4μs    0.0%   10.1KiB    0.0%
+│    Make DiffEq Problem                      1    154μs    0.0%   13.8KiB    0.0%
 │  ───────────────────────────────────────────────────────────────────────────────
 │ 
 └ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:487
+┌ Error: 2024-12-10T15:56:28.913 [25900:1]: The simulation failed with return code ConvergenceFailure
+└ @ PowerSimulationsDynamics C:\Users\bagir\.julia\packages\PowerSimulationsDynamics\wch0a\src\base\simulation.jl:555

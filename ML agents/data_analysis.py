@@ -46,8 +46,8 @@ upper_bound = 0.0325
 
 # specify test set: 'all', 'HIC', 'noHIC'
 test_index = "all"
-case_size = "39"
-method_type = "SD10"
+case_size = "162"
+method_type = "SD6"
 
 # Specify the directory and file name
 directory = f"C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case{case_size}/datasets/"

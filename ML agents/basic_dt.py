@@ -8,8 +8,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from sklearn.model_selection import GridSearchCV
+
 plt.style.use(['C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/0) DTU Admin/5) Templates/thesis.mplstyle'])
 plt.rcParams['text.usetex'] = False
+
+from matplotlib import font_manager
+
+font_path = 'C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/0) DTU Admin/5) Templates/palr45w.ttf' # Path to your .ttf font file
+font_manager.fontManager.addfont(font_path) # Add the font to Matplotlib's font manager
+plt.rcParams['font.family'] = 'Palatino' # Set the font globally
+#plt.rcParams['font.family'] = 'sans-serif'
 
 
 def fpr_score(y_actual, y_hat):
@@ -117,13 +125,14 @@ def plot_damping_histograms(x_lb, bar_width, damping_data, training_data, sec_tr
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
 
+# 39-bus: SD13, 162-bus: SD0, 162-bus: SD6 only_method
 
 # specify test set: 'all', 'HIC'
-case_size = "39"
-method_type = "SD10"
+case_size = "162"
+method_type = "SD6"
 
 test_index = "all"
-equal_split = 'false'
+equal_split = 'false' #only_method, false
 
 # Specify the directory and file name
 directory = f"C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/output/case{case_size}/datasets/"
@@ -184,6 +193,7 @@ if equal_split == 'only_method' or equal_split == 'true':
     damping_data_method = op_data_method['damping']
     ##############################################################
 else:
+    #op_data_method_hic = op_data_method_original
     op_data_method = op_data_method.sample(n = total_samples, random_state=seed).reset_index(drop=False)
     damping_data_method = op_data_method['damping']
 
@@ -1065,12 +1075,12 @@ fn_imp_violations = fn_imp_ops[['N0', 'damping']]
 
 # Parameters
 bins = np.arange(0.0, 0.05, 0.0025)
-titles = ['Method', 'LHC', 'Importance']
-dataframes_fp = [fp_method_violations, fp_lhc_violations, fp_imp_violations]
-dataframes_fn = [fn_method_violations, fn_lhc_violations, fn_imp_violations]
+titles = ['LHC', 'Importance', 'Proposed Method']
+dataframes_fp = [fp_lhc_violations, fp_imp_violations, fp_method_violations]
+dataframes_fn = [fn_lhc_violations, fn_imp_violations, fn_method_violations]
 
-# Define professional colors
-colors = ["#1b9e77", "#d95f02", "#7570b3"]
+# Define professional colors based on LaTeX definitions
+colors = ["#1269B0", "#A8322D", "#EDB120"]
 
 # Initialize maximum count tracker
 max_count = np.zeros([len(bins),len(dataframes_fp)])
@@ -1115,7 +1125,7 @@ y_limit = max_count.max()
 print(max_count)
 
 # Create a figure with subplots
-fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(6, 8))
+fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(6, 5))
 
 for ax, df_fp, df_fn, title in zip(axs, dataframes_fp, dataframes_fn, titles):
     # Initialize lists to store counts for each condition (False Positives and False Negatives)
@@ -1152,46 +1162,65 @@ for ax, df_fp, df_fn, title in zip(axs, dataframes_fp, dataframes_fn, titles):
     x = np.arange(len(bins) - 1)
     x_centered = x - width / 2 
 
+    # plot vertical lines
+    xticks_positions = []
+    markers = [0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045] 
+    for i in markers:
+        print(i)
+        xticks_positions.append(np.where(np.isclose(bins, i))[0][0])
+
+    # color HIC reigon
+    ax.axvspan(x[xticks_positions[5]] + (1-width)/2, x[xticks_positions[6]] + (1-width)/2, color="red", alpha=0.2)
+
     ax.bar(x_centered, stability_only, width=width, label='Stability', color=colors[0], edgecolor='black')
     ax.bar(x_centered, feasibility_only, width=width, bottom=stability_only, label='Feasibility', color=colors[1], edgecolor='black')
     ax.bar(x_centered, both_conditions, width=width,
            bottom=np.array(stability_only) + np.array(feasibility_only),
            label='Security', color=colors[2], edgecolor='black')
 
+    
+    # Set the title inside the grid area
+    ax.text(0.98, 0.95, title, transform=ax.transAxes, ha='right', va='top', fontsize=12, fontweight='bold')  # Position it inside the plot area
+    
     # Customize each subplot
-    ax.set_title(f'{title}')
+    #ax.set_title(f'{title}', loc='right', pad=10)
     ax.set_ylabel('Count')
     ax.set_ylim([0, y_limit*1.05])
     ax.tick_params(axis='both', which='major')
 
     # Manually set y-ticks (fewer ticks)
-    y_ticks = np.arange(0, y_limit * 1.05, step=100)  # Adjust step size
+    y_ticks = np.arange(0, y_limit * 1.05, step=200)  # Adjust step size
     ax.set_yticks(y_ticks)
 
     # set grid lines
     ax.grid(True)
 
-    # plot vertical lines
-    xticks_positions = [np.where(np.isclose(bins, 0.0))[0][0], np.where(np.isclose(bins, 0.0275))[0][0], np.where(np.isclose(bins, 0.03))[0][0], np.where(np.isclose(bins, 0.0325))[0][0]]
-    for pos in x[xticks_positions]:
-        ax.axvline(x= pos - width - (1-width)/2, color='grey', linestyle='--', alpha=0.6, linewidth=1)
-    
+    # for pos in x[xticks_positions]:
+    #     ax.axvline(x= pos - width - (1-width)/2, color='grey', linestyle='--', alpha=0.6, linewidth=1)
 
-# Add x-axis labels to the bottom subplot
-# axs[-1].set_xticks(x_centered)
-# axs[-1].set_xticklabels([f"{bins[i] * 100:.2f}-{bins[i + 1] * 100:.2f}" for i in range(len(bins) - 1)], rotation=90)
+# Adjust the spacing between subplots
+plt.subplots_adjust(hspace=0.0)
+
+# # Add x-axis labels to the bottom subplot
+# axs[-1].set_xticks(x_centered - 1)
+# axs[-1].set_xticklabels([f"{bins[i] * 100:.2f}-{bins[i + 1] * 100:.2f}" for i in range(len(bins) - 1)], rotation=45)
 
 # only set a few ticks on the x axis
-axs[-1].set_xticks(x[xticks_positions]  - width - (1-width)/2 )  
-axs[-1].set_xticklabels(['0.0', '2.75', '3.0', '3.25'], rotation=45)
-axs[-1].set_xlabel('Damping range ζ [%]')
+# axs[-1].set_xticks(x[xticks_positions]  - width - (1-width)/2 )  
+# axs[-1].set_xticklabels(['0.0', '0.5', '1.0', '1.5', '2', '2.5', '3', '3.5', '4', '4.5'], rotation=45)
+axs[-1].set_xticks(x[xticks_positions] - width - (1-width)/2)
+axs[-1].set_xticklabels(['0.0', '0.5', '1.0', '1.5', '2', '2.5', '3', '3.5', '4', '4.5'], rotation=0)
+
+
+# add x-axis label
+axs[-1].set_xlabel(r'Damping range $\zeta$ [%]')
 
 # Add a general title over the entire figure
 # fig.suptitle('Missclassified operating points')
 
 # Add a legend to the first subplot (axs[0])
 handles, labels = axs[0].get_legend_handles_labels()
-axs[0].legend(handles, labels, loc='upper right', bbox_to_anchor=(1, 1))
+axs[0].legend(handles, labels, loc='upper left', bbox_to_anchor=(0, 1), frameon=True, facecolor='white', edgecolor='black')
 
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 0.93, 1])

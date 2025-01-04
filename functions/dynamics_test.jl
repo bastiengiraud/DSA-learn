@@ -21,7 +21,7 @@ include("support.jl")
 
 # include path for power systems data
 data_path = joinpath(dirname(@__DIR__), "cases/static/")
-#file_path = joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri
+file_path = joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri
 #file_path = "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/1) Smal signal stability/SSA_module/Code_SSAmodule/WSCC_9_bus.raw"
 file_path = joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") #  IEEE118_v32.raw, pglib_opf_case162_ieee_dtc, pglib_opf_case14_ieee
 #file_path =                  "C:/Users/bagir/OneDrive - Danmarks Tekniske Universitet/Dokumenter/1) Projects/2) Datasets/2) Datasets code/cases/240busWECC_2018_PSS33.raw"
@@ -34,7 +34,10 @@ case_name =                 "case162"
 
 # initialize data
 network_data = PowerModels.parse_file(file_path) 
-scale_all_demand(network_data, 0.7)
+#scale_all_demand(network_data, 0.8)
+
+total_active_demand = sum(load["pd"] for load in values(network_data["load"]))
+println("Total Active Demand (P): $total_active_demand MW")
 
 # compare results
 result = solve_ac_opf(network_data, optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0))
@@ -45,12 +48,14 @@ update_data!(network_data, solution)
 
 # perform small signal stability assessment
 syst = create_system(network_data) 
+machine_data_dict = load_machine_data(dir_dynamics, case_name)
 #syst = System(file_path, file_dyn)
-construct_dynamic_model(syst, dir_dynamics, case_name) # own function from dynamics.jl
+construct_dynamic_model(syst, machine_data_dict) # own function from dynamics.jl
 #add_dyn_injectors!(syst, file_dyn)
 generators = get_components(x -> true, Generator, syst) # , "generator-34-1"
 my_thermal_gen = get_component(ThermalStandard, syst, "gen-1") 
 #avr = my_thermal_gen.dynamic_injector.avr # get_Ka(avr) etc...
+
 
 # transform loads to constant impedance
 for l in get_components(PowerSystems.StandardLoad, syst)

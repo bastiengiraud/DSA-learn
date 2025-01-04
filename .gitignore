@@ -2,3 +2,18 @@
 output/
 ML agents/
 0) checkpoint/
+
+# files to ignore
+DW_file_try.txt
+init_copy_imp.jl
+init_copy_lhc.jl
+init_copy1.jl
+init_copy2.jl
+init_copy3.jl
+init_copy4.jl
+init_test.jl
+main_copy1.jl
+main_copy2.jl
+main_copy3.jl
+main_copy4.jl
+ToolBox.jl
