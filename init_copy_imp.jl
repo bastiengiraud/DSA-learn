@@ -16,10 +16,10 @@ stopping_percentage, contingencies_inf, contingencies_n1, dw_computation, k_max,
 lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_bound, stability_lb, stability_ub
 
 # include path for power systems steady state data
-case_number =               "14"
+case_number =               "162"
 tag =			    "SD7"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
-file_path =                 joinpath(data_path, "pglib_opf_case14_ieee.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
+file_path =                 joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
 # file directory for dynamic data
 dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/") 
@@ -44,11 +44,11 @@ opt_dataset_filename =      "opt_ops.csv"
 opt_samples =               500
 
 # importance sampling
-imp_dataset_filename =      "$(case_number)bus_imp_ops.csv"
-imp_flows_filename =        "$(case_number)bus_imp_flows.csv"
-imp_macros =                "$(case_number)bus_macros_imp.csv"
+imp_dataset_filename =      "$(case_number)bus_imp2_ops.csv"
+imp_flows_filename =        "$(case_number)bus_imp2_flows.csv"
+imp_macros =                "$(case_number)bus_macros2_imp.csv"
 lhc_imp_samples =           4000
-nb_imp_samples =            10000
+nb_imp_samples =            25000
 
 # initialize data
 network_data = PowerModels.parse_file(file_path) 

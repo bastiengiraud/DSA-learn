@@ -16,10 +16,10 @@ stopping_percentage, contingencies_inf, contingencies_n1, dw_computation, k_max,
 lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_bound, stability_lb, stability_ub
 
 # include path for power systems steady state data
-case_number =               "14"
+case_number =               "162"
 tag =			    "SD2"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
-file_path =                 joinpath(data_path, "pglib_opf_case14_ieee.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
+file_path =                 joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
 # file directory for dynamic data
 dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/") 
@@ -34,10 +34,10 @@ mvnd_macros_filename =      "$(case_number)bus_$(tag)_method_macros_mvnd.csv"
 method_macros =             "$(case_number)bus_$(tag)_macros_method.csv"
 
 # LHC sampling initialization
-lhc_dataset_filename =      "$(case_number)bus_lhc_ops.csv"
-lhc_flows_filename =        "$(case_number)bus_lhc_flows.csv"
-lhc_macros =                "$(case_number)bus_macros_lhc.csv"
-lhc_samples =               10000
+lhc_dataset_filename =      "$(case_number)bus_lhc2_ops.csv"
+lhc_flows_filename =        "$(case_number)bus_lhc2_flows.csv"
+lhc_macros =                "$(case_number)bus_macros2_lhc.csv"
+lhc_samples =               25000
 
 # optimization based sampling
 opt_dataset_filename =      "opt_ops.csv"

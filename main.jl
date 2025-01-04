@@ -46,16 +46,26 @@ print("", "\n")
 print("Hyperplanes: ", Initialize.hyperplanes, "\n")
 print("Polytope samples: ", Initialize.polytope_samples, "\n")
 print("Importance samples: ", Initialize.mvnd_samples, "\n")
-print("Normal DWs. SD 39 bus. 0.0275 - 0.0325. loads 0.8.", "\n")
+print("Normal DWs. SD 162 bus. 0.0275 - 0.0325. loads 0.8.", "\n")
 print("this is alpha: ", Initialize.alpha , "\n")
 print("this is k_max: ", Initialize.k_max, "and k_max_hic: ", Initialize.k_max_HIC, "\n")
 
 # set temp folder to store temporary files
-ENV["TMP"] = Initialize.temp_directory
-print("this is the tempdir: ", tempdir(), "\n")
+temp_folder = Initialize.temp_folder
 
-#clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
+# Check if the folder exists
+if !isdir(temp_folder)
+    println("Folder does not exist. Creating folder: ", temp_folder)
+    mkdir(temp_folder)  # Create the folder
+else
+    println("Folder already exists: ", temp_folder)
+end
+
+# set the temp folder
+ENV["TMP"] = temp_folder
+print("this is the tempdir: ", tempdir(), "\n")
 clean_full_temp_folder()
+
 
 # check if properly initialized
 check_initialization()
@@ -146,7 +156,7 @@ if Initialize.directed_walks == true
         start_time_dws = time()
 
         # Add workers for distributed parallelism
-        num_procs = 2
+        num_procs = 10
         addprocs(num_procs)  # Adjust based on your needs
         println("Total active workers: ", nworkers())
 
@@ -177,7 +187,8 @@ if Initialize.directed_walks == true
             using .Initialize
 
             # set temp folder to store temporary files
-            ENV["TMP"] = Initialize.temp_directory
+            temp_folder = $temp_folder
+            ENV["TMP"] = temp_folder
             print("this is the tempdir: ", tempdir(), "\n")
 
             # clear_temp_folder("C:/Users/bagir/AppData/Local/Temp")
@@ -371,4 +382,8 @@ summary_result(Initialize.mvnd_sampling, Initialize.directed_walks)
 df_flow = construct_dt_data()
 output_path_dt_data = joinpath(Initialize.directory, Initialize.flows_filename)
 CSV.write(output_path_dt_data, df_flow; delim=';')  
+
+# clean up after you're done
+rm(temp_folder; force=true, recursive=true)
+println("Temporary folder removed: ", temp_folder)
 

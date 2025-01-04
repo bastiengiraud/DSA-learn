@@ -14,7 +14,7 @@ export data_path, file_path, dir_dynamics, case_name, directory, dataset_filenam
 mvnd_sampling, contingency_analysis, sss_analysis, directed_walks, variable_loads, hyperplanes, polytope_samples, mvnd_samples, stopping_iteration,
 stopping_percentage, contingencies_inf, contingencies_n1, dw_computation, k_max, k_max_HIC, distance, alpha, nominal_load, lhc_dataset_filename, lhc_flows_filename, 
 lhc_macros, lhc_samples, opt_dataset_filename, opt_samples, imp_dataset_filename, imp_flows_filename, imp_macros, lhc_imp_samples, nb_imp_samples, stability_bound, stability_lb, 
-stability_ub, temp_directory
+stability_ub, temp_folder
 
 # include path for power systems steady state data
 case_number =               "39"
@@ -88,7 +88,9 @@ distance =                  [0.015, 0.01, 0.005]
 alpha =                     [4, 3, 2, 1] # [2, 1.5, 1, 0.5]
 
 # set temporary directory
-temp_directory = "C:/temp_try"
+parent_temp = "/dev/shm"
+custom_temp = "tempdir_$(tag)" # make custom name for temp folder
+temp_folder = joinpath(parent_temp, custom_temp) # create path for folder
 
 # set load profile
 nominal_load = true
