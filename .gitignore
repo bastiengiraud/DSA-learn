@@ -25,9 +25,14 @@ ToolBox.jl
 
 
 # untrack the following files:
-# git rm --cached "0) checkpoint/"
-# git rm --cached "ML agents/"
-# git rm --cached "output/"
+# git rm -r --cached "0) checkpoint/"
+# git rm -r --cached "ML agents/"
+# git rm -r --cached "output/"
+# git rm -r --cached "cases/dynamic/case9"
+# git rm -r --cached "cases/dynamic/case14"
+# git rm -r --cached "cases/dynamic/case30"
+# git rm -r --cached "cases/dynamic/case57"
+# git rm -r --cached "cases/dynamic/case118"
 # git rm --cached DW_file_try.txt
 # git rm --cached init_copy_imp.jl
 # git rm --cached init_copy_lhc.jl
