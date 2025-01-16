@@ -2,6 +2,7 @@
 output/
 ML agents/
 0) checkpoint/
+plot/
 cases/dynamic/case9
 cases/dynamic/case14
 cases/dynamic/case30
