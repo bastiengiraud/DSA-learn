@@ -1,4 +1,4 @@
-# DSA-learn
+# DSA-learn.jl
 This repository provides tools to generate datasets for dynamic security assessment using our proposed method and baseline benchmarks. Below is a guide to help you navigate the repository and generate your own dataset.
 
 For more information, read our paper 'A Dataset Generation Toolbox for Dynamic Security Assessment: On the Role of the Security Boundary'. If you use this work, please cite it as follows:
