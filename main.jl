@@ -53,18 +53,18 @@ print("this is k_max: ", Initialize.k_max, "and k_max_hic: ", Initialize.k_max_H
 # set temp folder to store temporary files
 temp_folder = Initialize.temp_folder
 
-# Check if the folder exists
-if !isdir(temp_folder)
-    println("Folder does not exist. Creating folder: ", temp_folder)
-    mkdir(temp_folder)  # Create the folder
-else
-    println("Folder already exists: ", temp_folder)
-end
+# # Check if the folder exists
+# if !isdir(temp_folder)
+#     println("Folder does not exist. Creating folder: ", temp_folder)
+#     mkdir(temp_folder)  # Create the folder
+# else
+#     println("Folder already exists: ", temp_folder)
+# end
 
-# set the temp folder
-ENV["TMP"] = temp_folder
-print("this is the tempdir: ", tempdir(), "\n")
-clean_full_temp_folder()
+# # set the temp folder
+# ENV["TMP"] = temp_folder
+# print("this is the tempdir: ", tempdir(), "\n")
+# clean_full_temp_folder()
 
 
 # check if properly initialized

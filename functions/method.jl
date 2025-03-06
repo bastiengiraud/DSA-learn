@@ -115,6 +115,15 @@ function seperating_hyperplanes(network_data , hyperplanes, variable_loads, cont
     optimal_setpoints = []
     original_optimal = []
 
+    # initialize input space with the tightened bounds, polytope = P
+    ndim_init, _, _, min_lim_init, max_lim_init = dim_and_limits_variables(network_data, variable_loads)
+    create_scaled_pol(ndim_init, min_lim_init , max_lim_init)
+    v = comp_vol()
+    push!(volumes, v)
+    println("Initial volume : ", v)
+
+    stop
+
     # OBBT on voltage magnitude and phase angle difference variables
     # QCLSPowerModel is a strengthened version of the "Quadratic convex" relaxation. An extreme-point encoding of trilinar terms is used along with a constraint to link the lambda variables in multiple trilinar terms
     data_tight_tmp, _, _ = solve_obbt_load_opf!(network_data, optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0), max_iter=iter, model_constructor=QCLSPowerModel)
@@ -156,7 +165,7 @@ function seperating_hyperplanes(network_data , hyperplanes, variable_loads, cont
     create_scaled_pol(ndim, min_lim , max_lim)
     v = comp_vol()
 
-    println("Initial volume : ", v)
+    println("Volume after OBBT : ", v)
     push!(volumes, v)
 
     # initialize vector of variables

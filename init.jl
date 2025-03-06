@@ -18,9 +18,9 @@ stability_ub, temp_folder
 
 # include path for power systems steady state data
 case_number =               "162"
-tag =			    "SD6"
+tag =			            "SD6"
 data_path =                 joinpath(@__DIR__, "cases/static/") 
-file_path =                 joinpath(data_path, "pglib_opf_case162_ieee_dtc.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
+file_path =                 joinpath(data_path, "pglib_opf_case39_epri.m") # pglib_opf_case39_epri.m pglib_opf_case162_ieee_dtc.m
 
 # file directory for dynamic data
 dir_dynamics =              joinpath(@__DIR__, "cases/dynamic/") 
