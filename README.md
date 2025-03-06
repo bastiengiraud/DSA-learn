@@ -35,7 +35,7 @@ To get started with this repository, you simply need to clone the repository. Al
 
 ## How to Use
 
-To start using the toolbox, you simply need to specify your dataset parameters in the `init.jl` file, and then you can run the `main.jl` file. The `init.jl` file contains ALL parameters you can modify. Behind the parameters, a short explanation is provided of what it is and what you can choose from.
+To start using the toolbox, you simply need to specify your dataset parameters in the `init.jl` file, and then you can run the `main.jl` file. The `init.jl` file contains ALL parameters you can modify. The parameters in this file contain a short description behind it, please read this short explanation carefully; they explain what the parameters are and what you can choose from.
 
 1. **Configure Parameters**:  
    All parameters required for dataset generation are specified in `init.jl`. This includes configurations for both the proposed method and the benchmark methods.
