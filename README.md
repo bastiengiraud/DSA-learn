@@ -13,13 +13,52 @@ For more information, read our paper 'A Dataset Generation Toolbox for Dynamic S
 }
 ```
 
+## Setting up the Environment
+
+To get started with this repository, follow these steps:
+
+1. **Clone the Repository**  
+   Clone the repository to your local machine:
+
+   ```bash
+   git clone https://github.com/bastiengiraud/DSA-learn.git
+   cd yourrepository
+   ```
+
+2. **Acivate the Julia Environment**  
+   In the Julia REPL, activate the environment (this is included in the main file!):
+
+  ```bash
+  using Pkg
+  Pkg.activate(".")
+  ```
+
+3. **Install Dependencies**  
+  Install the required dependencies (this is also included in the main file!):
+
+  ```bash
+  using Pkg
+  Pkg.instantiate()
+  ```
+
+4. **Install R**
+  This repository also uses R and calls it using Rcall in Julia. Therefore, make sure you have R installed on your device.
+  Moreover, you will need to install the following two packages in R: Rcpp, and volesti. You can install them as follows:
+
+  - Open R terminal and type: 
+    - install.packages("Rcpp")
+    - install.packages("volesti")
+
+
 ## How to Use
 
-1. **Run the Main Script**:  
-   The main script is `main.jl`. Execute this file to generate your dataset.
+To start using the toolbox, you simply need to specify your dataset parameters in the `init.jl` file, and then you can run the `main.jl` file. 
 
-2. **Configure Parameters**:  
+1. **Configure Parameters**:  
    All parameters required for dataset generation are specified in `init.jl`. This includes configurations for both the proposed method and the benchmark methods.
+
+2. **Run the Main Script**:  
+   The main script is `main.jl`. Execute this file to generate your dataset.
 
 3. **Generate Benchmark Datasets**:  
    To generate datasets using one of the baseline benchmarks, execute the corresponding code in the `baseline` folder.
